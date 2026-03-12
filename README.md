@@ -10,7 +10,7 @@ El sistema permitirá:
 - Publicar ofertas de empleo.
 - Buscar trabajos disponibles.
 - Registrar usuarios (empresas y postulantes).
-- Postular a empleos en línea.
+- Postular a empleos en línea.ien
 
 La plataforma estará disponible como aplicación web accesible desde navegadores.
 
@@ -53,9 +53,9 @@ El sistema será una plataforma web centralizada donde empresas publican vacante
 - **RNF3 – Usabilidad**: La interfaz debe ser simple y fácil de usar.
 - **RNF4 – Rendimiento**: El sistema debe responder a las solicitudes en menos de 3 segundos.
 
-## 5. Requerimientos de Base de Datos
+## 5. Requerimientos de Datos (Persistencia en LocalStorage)
 
-El sistema debe almacenar:
+El sistema utilizará `localStorage` en el navegador web para almacenar los datos de forma persistente sin necesidad de una base de datos backend. Los datos a almacenar incluyen:
 
 - **Usuarios**: id_usuario, nombre, email, contraseña, tipo_usuario.
 - **Empresas**: id_empresa, nombre_empresa, dirección, contacto.
@@ -63,6 +63,6 @@ El sistema debe almacenar:
 - **Postulaciones**: id_postulación, usuario, empleo, fecha.
 
 ## 6. Restricciones
-- El sistema será desarrollado como aplicación web.
-- Usará base de datos relacional.
+- El sistema será desarrollado como aplicación web utilizando **Django** (Backend para proveer las vistas/plantillas).
+- Usará **LocalStorage** para la persistencia de datos del lado del cliente (en lugar de base de datos relacional).
 - Compatible con navegadores modernos.
