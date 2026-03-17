@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolsa de Empleo Loja</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="{% url 'index' %}">💼 Bolsa Loja</a>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <!-- Rellenado por JS en funcioón de la sesión de usuario -->
+        </div>
+    </nav>
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>&copy; 2024 Bolsa de Empleo Loja. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Lógica de Base de Datos Local y Sesión -->
+    <script src="{% static 'core/js/db.js' %}"></script>
+    <script src="{% static 'core/js/auth.js' %}"></script>
+    <script src="{% static 'core/js/app.js' %}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

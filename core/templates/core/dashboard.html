@@ -1,0 +1,63 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h2 id="dashTitle">Mi Panel de Control</h2>
+    <div id="dashActions">
+        <!-- Botones dinámicos según el tipo de usuario (ej. Nueva Oferta) -->
+    </div>
+</div>
+
+<div class="dashboard-content">
+    <div class="dash-section" id="myJobsSection">
+        <h3 id="sectionTitle">Mis Publicaciones</h3>
+        <div id="myJobList" class="job-list">
+            <!-- Empleos publicados o postulaciones -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nueva Oferta -->
+<div id="newJobModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Publicar Nueva Oferta</h2>
+        <form id="newJobForm">
+            <div class="form-group">
+                <label>Título del Puesto</label>
+                <input type="text" id="jobTitle" required>
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea id="jobDesc" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Categoría</label>
+                <select id="jobCategory" required>
+                    <option value="tecnologia">Tecnología</option>
+                    <option value="ventas">Ventas</option>
+                    <option value="administracion">Administración</option>
+                    <option value="otros">Otros</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Ubicación</label>
+                <input type="text" id="jobLocation" required value="Loja, Ecuador">
+            </div>
+            <button type="submit" class="btn btn-primary">Publicar</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Postulantes -->
+<div id="applicantsModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="closeApplicants">&times;</span>
+        <h2>Postulantes al Puesto</h2>
+        <ul id="applicantsList" class="applicants-list">
+            <!-- Postulantes cargados dinámicamente -->
+        </ul>
+    </div>
+</div>
+
+{% endblock %}

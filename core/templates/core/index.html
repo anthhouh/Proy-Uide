@@ -1,0 +1,20 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="hero">
+    <h1>Encuentra el trabajo ideal en Loja</h1>
+    <p>Conectamos talento lojano con las mejores oportunidades laborales.</p>
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Buscar por título, categoría o ubicación...">
+        <button id="searchBtn" class="btn btn-primary">Buscar</button>
+    </div>
+</section>
+
+<section class="job-list-section">
+    <h2>Ofertas Recientes</h2>
+    <div id="jobList" class="job-list">
+        <!-- Los empleos se cargarán dinámicamente aquí mediante app.js -->
+    </div>
+</section>
+{% endblock %}
