@@ -4,25 +4,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bolsa de Empleo Loja</title>
+    <title>Empleo Loja</title>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
 </head>
 <body>
     <nav class="navbar">
-        <div class="logo">
-            <a href="{% url 'index' %}">💼 Bolsa Loja</a>
-        </div>
-        <div class="nav-links" id="navLinks">
-            <!-- Rellenado por JS en funcioón de la sesión de usuario -->
+        <div class="container navbar-inner">
+            <div class="logo">
+                <a href="{% url 'index' %}">
+                    <div class="logo-icon">💼</div>
+                    Empleo Loja
+                </a>
+            </div>
+            <!-- The ID navLinks is used by JS to inject user/auth aware links -->
+            <div class="nav-links" id="navLinks">
+                <!-- Fallback/default logic for visual testing before JS loads -->
+                <a href="{% url 'index' %}">Inicio</a>
+                <a href="{% url 'buscar_empleos' %}">Buscar empleos</a>
+                <a href="#">Publicar empleo</a>
+                <div class="nav-auth-links" style="margin-left: 1rem;">
+                    <a href="{% url 'login' %}">Iniciar sesión</a>
+                    <a href="{% url 'registro' %}" class="btn btn-primary">Registro</a>
+                </div>
+            </div>
         </div>
     </nav>
-    <main class="container">
+    
+    <main>
         {% block content %}{% endblock %}
     </main>
-    <footer>
-        <p>&copy; 2024 Bolsa de Empleo Loja. Todos los derechos reservados.</p>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col" style="grid-column: span 1.5;">
+                    <div class="logo" style="margin-bottom: 1rem;">
+                        <a href="{% url 'index' %}" style="display:flex; align-items:center; gap:0.5rem; font-weight:700; font-size:1.25rem; color: #111827;">
+                            <div class="logo-icon" style="background:#6b7280;">💼</div> Empleo Loja
+                        </a>
+                    </div>
+                    <p>La plataforma líder en búsqueda de empleo en la ciudad de Loja y sus alrededores. Conectando talento local con excelentes oportunidades.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Para Candidatos</h4>
+                    <ul>
+                        <li><a href="#">Buscar Empleos</a></li>
+                        <li><a href="#">Alertas de Empleo</a></li>
+                        <li><a href="#">Subir Currículum</a></li>
+                        <li><a href="#">Blog de Carrera</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Para Empresas</h4>
+                    <ul>
+                        <li><a href="#">Publicar Empleo</a></li>
+                        <li><a href="#">Planes y Precios</a></li>
+                        <li><a href="#">Base de Talentos</a></li>
+                        <li><a href="#">Soluciones HR</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contacto</h4>
+                    <ul style="color: #6b7280; font-size:0.875rem;">
+                        <li style="display:flex; align-items:center; gap:0.5rem;">✉️ hola@empleoloja.com</li>
+                        <li style="display:flex; align-items:center; gap:0.5rem;">📞 +593 7 255 1234</li>
+                        <li style="display:flex; align-items:center; gap:0.5rem;">📍 Av. Universitaria, Loja, EC</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Empleo Loja. Todos los derechos reservados.</p>
+                <div class="social-links">
+                    <a href="#">f</a>
+                    <a href="#">in</a>
+                    <a href="#">tw</a>
+                </div>
+            </div>
+        </div>
     </footer>
 
     <!-- Lógica de Base de Datos Local y Sesión -->

@@ -14,3 +14,6 @@ def dashboard(request):
 
 def empleo(request):
     return render(request, 'core/empleo.html')
+
+def buscar_empleos(request):
+    return render(request, 'core/buscar_empleos.html')

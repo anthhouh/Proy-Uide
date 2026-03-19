@@ -1,35 +1,450 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h2 id="dashTitle">Mi Panel de Control</h2>
-    <div id="dashActions">
-        <!-- Botones dinámicos según el tipo de usuario (ej. Nueva Oferta) -->
-    </div>
-</div>
+<style>
+/* Base Dashboard Styles */
+body { background-color: var(--bg-main); }
+.dashboard-layout {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
 
-<div class="dashboard-content">
-    <div class="dash-section" id="myJobsSection">
-        <h3 id="sectionTitle">Mis Publicaciones</h3>
-        <div id="myJobList" class="job-list">
-            <!-- Empleos publicados o postulaciones -->
+/* Modals */
+.modal-content input, .modal-content select, .modal-content textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    margin-top: 0.5rem;
+    font-family: inherit;
+}
+.modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+.modal-content label {
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+.form-group {
+    margin-bottom: 1rem;
+}
+.applicants-list {
+    list-style: none;
+    padding: 0;
+}
+.applicants-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.applicants-list li:last-child {
+    border-bottom: none;
+}
+
+/* -------------------------------------
+   POSTULANTE DASHBOARD SPECIFIC STYLES
+   ------------------------------------- */
+
+.dashboard-header-post {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+.dashboard-title-post h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+}
+.dashboard-title-post p {
+    color: var(--text-muted);
+}
+.stats-grid-post {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+@media (max-width: 1024px) {
+    .stats-grid-post {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 600px) {
+    .stats-grid-post {
+        grid-template-columns: 1fr;
+    }
+}
+.stat-card-post {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+}
+.stat-icon-post {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+.stat-trend {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+.stat-trend.up { color: var(--success-color); }
+.stat-trend.neutral { color: var(--text-muted); }
+.stat-label-post {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+.stat-value-post {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.main-grid-post {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+@media (max-width: 900px) {
+    .main-grid-post {
+        grid-template-columns: 1fr;
+    }
+}
+
+.section-header-post {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+.section-header-post h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.section-header-post a {
+    color: var(--primary-color);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+/* Recommended Jobs Card */
+.job-card-rec {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+.job-logo-rec {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    background: #f1f5f9;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+}
+.job-info-rec {
+    flex: 1;
+}
+.job-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+.job-title-row h4 {
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+.job-meta-rec {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+.job-tags-rec {
+    display: flex;
+    gap: 0.5rem;
+}
+.tag-rec {
+    background: #f1f5f9;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+}
+.job-action-rec {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    min-width: 120px;
+}
+.job-time-rec {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+/* Side Cards */
+.side-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.side-card.white {
+    background: white;
+    border-color: var(--border-color);
+}
+.side-card h4 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.side-card input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.75rem;
+}
+
+/* Progress Bar */
+.progress-container {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+.progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Timeline */
+.timeline {
+    margin-top: 1.5rem;
+}
+.timeline-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+.timeline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    margin-top: 0.375rem;
+    position: relative;
+    z-index: 2;
+}
+.timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 12px;
+    bottom: -16px;
+    width: 2px;
+    background: #e2e8f0;
+    z-index: 1;
+}
+.timeline-item.green .timeline-dot { background: var(--success-color); }
+.timeline-item.blue .timeline-dot { background: var(--primary-color); }
+.timeline-item.gray .timeline-dot { background: #cbd5e1; }
+
+.timeline-content { flex: 1; }
+.timeline-job { font-weight: 600; font-size: 0.875rem; }
+.timeline-status { color: var(--text-muted); font-size: 0.75rem; }
+.timeline-time { color: var(--text-muted); font-size: 0.75rem; text-align: right; }
+
+/* -------------------------------------
+   EMPRESA DASHBOARD SPECIFIC STYLES
+   (Preserved for functionality)
+   ------------------------------------- */
+.dashboard-empresa-container {
+    margin-top: 4rem; /* Separator if both show */
+}
+/* Recycled stats-grid, dashboard-main-grid from earlier */
+</style>
+
+<div class="dashboard-layout">
+    
+    <!-- ==============================================
+         VISTA POSTULANTE (Job Seeker Dashboard)
+         ============================================== -->
+    <div id="dashboardPostulante">
+        <div class="dashboard-header-post">
+            <div class="dashboard-title-post">
+                <h2 id="dashTitlePost">Resumen de actividad</h2>
+                <p>Bienvenido de nuevo, Juan. Tienes 3 nuevas ofertas que coinciden con tu perfil.</p>
+            </div>
+            <div>
+                <button class="btn btn-primary" style="display:flex; align-items:center; gap:0.5rem; font-size:1rem; padding:0.75rem 1.5rem;">
+                    ✎ Editar Perfil
+                </button>
+            </div>
+        </div>
+
+        <div class="stats-grid-post">
+            <div class="stat-card-post">
+                <div class="stat-trend up">📈 +20%</div>
+                <div class="stat-icon-post" style="background:#eff6ff; color:#3b82f6;">➤</div>
+                <div class="stat-label-post">Postulaciones activas</div>
+                <div class="stat-value-post" id="statPostulaciones">0</div>
+            </div>
+            <div class="stat-card-post">
+                <div class="stat-trend up">📈 +5%</div>
+                <div class="stat-icon-post" style="background:#f3e8ff; color:#a855f7;">👁</div>
+                <div class="stat-label-post">Vistas de perfil</div>
+                <div class="stat-value-post" id="statVistas">0</div>
+            </div>
+            <div class="stat-card-post">
+                <div class="stat-trend neutral">Sin cambios</div>
+                <div class="stat-icon-post" style="background:#fffbeb; color:#f59e0b;">📅</div>
+                <div class="stat-label-post">Entrevistas</div>
+                <div class="stat-value-post">2</div>
+            </div>
+            <div class="stat-card-post">
+                <a href="#" class="stat-trend" style="color:var(--primary-color);">Ver guardados</a>
+                <div class="stat-icon-post" style="background:#ecfdf5; color:#10b981;">🔖</div>
+                <div class="stat-label-post">Ofertas guardadas</div>
+                <div class="stat-value-post" id="statGuardadas">0</div>
+            </div>
+        </div>
+
+        <div class="main-grid-post">
+            <div class="main-content-left">
+                <div class="section-header-post">
+                    <h3>Empleos recomendados</h3>
+                    <a href="#">Ver todos</a>
+                </div>
+                
+                <div class="jobs-rec-list" id="recommendedJobsList">
+                    <!-- DOM elements will be inserted here by Javascript -->
+                </div>
+            </div>
+
+            <div class="main-content-right">
+                <!-- Búsqueda rápida -->
+                <div class="side-card">
+                    <h4><span style="color:var(--primary-color);">⚡</span> Búsqueda rápida</h4>
+                    <input type="text" placeholder="🔍 Cargo o empresa...">
+                    <input type="text" placeholder="📍 Loja, Ecuador">
+                    <button class="btn btn-primary w-full mt-2" style="font-size:1rem; padding:0.875rem;">Buscar ahora</button>
+                </div>
+
+                <!-- Fortaleza del perfil -->
+                <div class="side-card white">
+                    <h4 style="margin-bottom:1.5rem;">Fortaleza del perfil</h4>
+                    <div class="progress-labels">
+                        <span style="color:var(--text-muted); font-weight:500;">Intermedio</span>
+                        <span style="color:var(--primary-color);">75%</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: 75%;"></div>
+                    </div>
+                    <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.5; margin-bottom:1rem;">
+                        Completa tu experiencia laboral para aumentar tus posibilidades de ser contratado.
+                    </p>
+                    <a href="#" style="color:var(--primary-color); font-weight:600; font-size:0.875rem;">Completar perfil →</a>
+                </div>
+
+                <!-- Estado de postulaciones -->
+                <div class="side-card white">
+                    <h4 style="margin-bottom:1.5rem;">Estado de postulaciones</h4>
+                    <div class="timeline" id="postulacionesTimeline">
+                        <!-- JS injects timeline items here -->
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
+
+    <!-- ==============================================
+         VISTA OFERTANTE (Employer Dashboard from previous design - retained for logic)
+         Nota para el developer: Puedes ocular el que no corresponda con Javascript o render del servidor (display: none;)
+         ============================================== -->
+    <div id="dashboardEmpresa" class="dashboard-empresa-container" style="display:none;">
+        <hr style="border:0; border-top:2px dashed #e2e8f0; margin-bottom:4rem;">
+        <div class="dashboard-header-modern">
+            <div class="dashboard-title-area">
+                <h2 id="dashTitle">Mi Panel de Control (Ofertante)</h2>
+                <p>Bienvenido de nuevo. Gestiona tus ofertas y postulaciones aquí.</p>
+            </div>
+            <div id="dashActions" class="dashboard-actions">
+                <!-- Botones inyectados por JS -->
+            </div>
+        </div>
+        <div class="dashboard-main-grid">
+            <div class="dash-card" id="myJobsSection">
+                <div class="dash-card-header" style="border-bottom:1px solid var(--border-color); padding:1.5rem;">
+                    <h3 class="dash-card-title" id="sectionTitle">Mis Publicaciones</h3>
+                </div>
+                <div class="dash-card-body" style="padding:1.5rem;">
+                    <div id="myJobList" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- JS injects here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <!-- Modal Nueva Oferta -->
-<div id="newJobModal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn">&times;</span>
-        <h2>Publicar Nueva Oferta</h2>
+<div id="newJobModal" class="modal" style="display:none;">
+    <div class="modal-content" style="background:white; padding:2rem; border-radius:var(--radius-lg); width:90%; max-width:500px; margin: 10% auto; position:relative;">
+        <span class="close-btn" style="position:absolute; right:1.5rem; top:1.5rem; font-size:1.5rem; cursor:pointer;">&times;</span>
+        <h2 style="font-size:1.5rem; font-weight:700; margin-bottom:1.5rem;">Publicar Nueva Oferta</h2>
         <form id="newJobForm">
             <div class="form-group">
                 <label>Título del Puesto</label>
-                <input type="text" id="jobTitle" required>
+                <input type="text" id="jobTitle" required placeholder="Ej. Desarrollador Web Fullstack">
             </div>
             <div class="form-group">
                 <label>Descripción</label>
-                <textarea id="jobDesc" rows="4" required></textarea>
+                <textarea id="jobDesc" rows="4" required placeholder="Describe las responsabilidades..."></textarea>
             </div>
             <div class="form-group">
                 <label>Categoría</label>
@@ -44,19 +459,17 @@
                 <label>Ubicación</label>
                 <input type="text" id="jobLocation" required value="Loja, Ecuador">
             </div>
-            <button type="submit" class="btn btn-primary">Publicar</button>
+            <button type="submit" class="btn btn-primary btn-block mt-4" style="background:#10b981; border-color:#10b981;">Publicar Oferta</button>
         </form>
     </div>
 </div>
 
 <!-- Modal Postulantes -->
-<div id="applicantsModal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn" id="closeApplicants">&times;</span>
-        <h2>Postulantes al Puesto</h2>
-        <ul id="applicantsList" class="applicants-list">
-            <!-- Postulantes cargados dinámicamente -->
-        </ul>
+<div id="applicantsModal" class="modal" style="display:none;">
+    <div class="modal-content" style="background:white; padding:2rem; border-radius:var(--radius-lg); width:90%; max-width:500px; margin: 10% auto; position:relative;">
+        <span class="close-btn" id="closeApplicants" style="position:absolute; right:1.5rem; top:1.5rem; font-size:1.5rem; cursor:pointer;">&times;</span>
+        <h2 style="font-size:1.5rem; font-weight:700; margin-bottom:1.5rem;">Postulantes al Puesto</h2>
+        <ul id="applicantsList" class="applicants-list"></ul>
     </div>
 </div>
 

@@ -1,36 +1,146 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<div class="auth-container">
+<style>
+body { background-color: #f8fafc; }
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 1rem;
+}
+.auth-card {
+    background: white;
+    padding: 3rem 2.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid var(--border-color);
+}
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.auth-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+.auth-subtitle {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+.role-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.role-option {
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+.role-option:hover {
+    border-color: #bfdbfe;
+    background-color: #eff6ff;
+}
+.role-option.active {
+    border-color: var(--primary-color);
+    background-color: #eff6ff;
+    color: var(--primary-color);
+}
+.role-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+</style>
+
+<div class="auth-wrapper">
     <div class="auth-card">
-        <h2>Registro de Usuario</h2>
+        <div class="auth-header">
+            <h2 class="auth-title">Crear Cuenta</h2>
+            <p class="auth-subtitle">Únete a la plataforma de empleo líder en Loja</p>
+        </div>
+        
         <form id="registerForm">
+            <!-- Hidden input for JS compatibility -->
+            <input type="hidden" id="regRole" value="postulante">
+            
             <div class="form-group">
-                <label for="regRole">Soy un(a):</label>
-                <select id="regRole" required>
-                    <option value="postulante">Postulante (Busco trabajo)</option>
-                    <option value="empresa">Empresa (Ofrezco trabajo)</option>
-                </select>
+                <label>¿Cómo quieres usar la plataforma?</label>
+                <div class="role-selector">
+                    <div class="role-option active" data-role="postulante" onclick="selectRole('postulante', this)">
+                        <span class="role-icon">👤</span>
+                        POSTULANTE
+                    </div>
+                    <div class="role-option" data-role="empresa" onclick="selectRole('empresa', this)">
+                        <span class="role-icon">🏢</span>
+                        OFERTANTE
+                    </div>
+                </div>
             </div>
             
             <div class="form-group">
-                <label for="regName" id="lblRegName">Nombre Completo</label>
-                <input type="text" id="regName" required placeholder="Ingresa tu nombre">
+                <label for="regName" id="lblRegName">Nombre completo</label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 1rem; top: 0.625rem; color: #9ca3af;">👤</span>
+                    <input type="text" id="regName" class="form-control" required placeholder="Ej. Juan Pérez" style="padding-left: 2.5rem;">
+                </div>
             </div>
 
             <div class="form-group">
-                <label for="regEmail">Correo Electrónico</label>
-                <input type="email" id="regEmail" required placeholder="correo@ejemplo.com">
+                <label for="regEmail">Correo electrónico</label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 1rem; top: 0.625rem; color: #9ca3af;">✉️</span>
+                    <input type="email" id="regEmail" class="form-control" required placeholder="ejemplo@correo.com" style="padding-left: 2.5rem;">
+                </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group mb-8">
                 <label for="regPassword">Contraseña</label>
-                <input type="password" id="regPassword" required placeholder="Mínimo 6 caracteres">
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 1rem; top: 0.625rem; color: #9ca3af;">🔒</span>
+                    <input type="password" id="regPassword" class="form-control" required placeholder="Mínimo 8 caracteres" style="padding-left: 2.5rem;">
+                </div>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">Registrarse</button>
-            <p class="auth-link">¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia Sesión</a></p>
+            <div id="registerError" class="error-msg"></div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="padding: 0.875rem; font-size: 1rem;">Registrarse ahora</button>
+            <p class="text-center mt-8 text-muted" style="font-size: 0.875rem;">
+                ¿Ya tienes una cuenta? <a href="{% url 'login' %}" class="text-primary font-semibold">Inicia sesión</a>
+            </p>
         </form>
     </div>
 </div>
+
+<script>
+function selectRole(role, element) {
+    // Update hidden input
+    document.getElementById('regRole').value = role;
+    
+    // Update active class
+    const options = document.querySelectorAll('.role-option');
+    options.forEach(opt => opt.classList.remove('active'));
+    element.classList.add('active');
+    
+    // Update label text if needed
+    const lbl = document.getElementById('lblRegName');
+    if (role === 'empresa') {
+        lbl.innerText = 'Nombre de la Empresa';
+    } else {
+        lbl.innerText = 'Nombre completo';
+    }
+}
+</script>
 {% endblock %}

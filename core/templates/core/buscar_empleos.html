@@ -1,0 +1,382 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<style>
+body {
+    background-color: var(--bg-main);
+}
+.search-page-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+    padding: 2rem 0;
+}
+@media (max-width: 900px) {
+    .search-page-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Sidebar Styles */
+.filters-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.filters-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+}
+.filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+.filters-header h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+.filter-clear {
+    color: var(--primary-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+.filter-group {
+    margin-bottom: 1.5rem;
+}
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+.filter-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+}
+.filter-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-main);
+}
+.filter-option input[type="checkbox"], .filter-option input[type="radio"] {
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--border-color);
+    accent-color: var(--primary-color);
+    cursor: pointer;
+}
+.filter-option input[type="radio"] {
+    border-radius: 50%;
+}
+.range-slider {
+    width: 100%;
+    margin-bottom: 0.5rem;
+    accent-color: var(--primary-color);
+}
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.help-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+}
+.help-card h4 {
+    color: var(--primary-hover);
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.help-card p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+.help-link {
+    font-size: 0.875rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Results Content Styles */
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+.results-title h1 {
+    font-size: 1.875rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+}
+.results-title p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+.view-toggles {
+    display: flex;
+    gap: 0.5rem;
+}
+.view-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--text-muted);
+}
+.view-btn.active {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: var(--primary-color);
+}
+
+/* Horizontal Job Card */
+.job-card-h {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+}
+.job-card-h:hover {
+    box-shadow: var(--shadow-sm);
+    border-color: #cbd5e1;
+}
+.job-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-md);
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+.job-info-main {
+    flex: 1;
+}
+.job-h-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+.job-h-title h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+.job-h-company {
+    font-size: 0.875rem;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+}
+.job-h-company span {
+    color: var(--text-muted);
+}
+.job-h-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+.job-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.75rem;
+    background: #f1f5f9;
+    color: #475569;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+.badge-action {
+    background: #eff6ff;
+    color: var(--primary-color);
+}
+.job-h-candidates {
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+.candidate-avatars {
+    display: flex;
+    margin-right: 0.5rem;
+}
+.candidate-avatars .avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background: #e2e8f0;
+    margin-left: -8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+.candidate-avatars .avatar:first-child {
+    margin-left: 0;
+}
+
+.job-h-right {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 160px;
+}
+.job-h-salary {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+}
+.job-h-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 3rem;
+}
+.page-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    background: white;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-main);
+}
+.page-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+.page-btn:hover:not(.active) {
+    background: #f1f5f9;
+}
+</style>
+
+<div class="container search-page-layout">
+    <aside class="filters-sidebar">
+        <div class="filters-card">
+            <div class="filters-header">
+                <h3>Filtros</h3>
+                <span class="filter-clear">Limpiar</span>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-title">Categoría</div>
+                <label class="filter-option">
+                    <input type="checkbox" checked> Tecnología
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox"> Administración
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox"> Ventas
+                </label>
+                <label class="filter-option">
+                    <input type="checkbox"> Diseño
+                </label>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-title">Tipo de Contrato</div>
+                <label class="filter-option">
+                    <input type="radio" name="contrato"> Tiempo completo
+                </label>
+                <label class="filter-option">
+                    <input type="radio" name="contrato"> Medio tiempo
+                </label>
+                <label class="filter-option">
+                    <input type="radio" name="contrato"> Freelance
+                </label>
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-title">Rango Salarial</div>
+                <input type="range" class="range-slider" min="450" max="3000" value="1500">
+                <div class="range-labels">
+                    <span>$450</span>
+                    <span>$3000+</span>
+                </div>
+            </div>
+
+            <button class="btn btn-primary w-full mt-4">Aplicar filtros</button>
+        </div>
+
+        <div class="help-card">
+            <h4>¿Necesitas ayuda?</h4>
+            <p>Recibe asesoría personalizada para mejorar tu perfil.</p>
+            <a href="#" class="help-link">Contactar soporte</a>
+        </div>
+    </aside>
+
+    <main class="results-main">
+        <div class="results-header">
+            <div class="results-title">
+                <h1>Buscar empleos</h1>
+                <p>Explora 124 vacantes disponibles en Loja, Ecuador</p>
+            </div>
+            <div class="view-toggles">
+                <button class="view-btn active">▦</button>
+                <button class="view-btn">☰</button>
+            </div>
+        </div>
+
+        <div class="jobs-list" id="searchJobsList">
+            <!-- Empleos inyectados dinámicamente -->
+        </div>
+
+        <div class="pagination">
+            <button class="page-btn">❮</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <span style="display:flex; align-items:center; padding:0 0.5rem;">...</span>
+            <button class="page-btn">12</button>
+            <button class="page-btn">❯</button>
+        </div>
+    </main>
+</div>
+{% endblock %}

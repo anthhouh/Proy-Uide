@@ -3,7 +3,9 @@ const DB_KEYS = {
     USUARIOS: 'bolsa_empleo_usuarios',
     EMPRESAS: 'bolsa_empleo_empresas',
     EMPLEOS: 'bolsa_empleo_empleos',
-    POSTULACIONES: 'bolsa_empleo_postulaciones'
+    POSTULACIONES: 'bolsa_empleo_postulaciones',
+    VISTAS_PERFIL: 'bolsa_empleo_vistas',
+    OFERTAS_GUARDADAS: 'bolsa_empleo_guardadas'
 };
 
 const DB = {
