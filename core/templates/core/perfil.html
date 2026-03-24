@@ -1,0 +1,418 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<style>
+/* View Profile Base Colors */
+:root {
+    --bg-page: #f8fafc;
+    --card-bg: #ffffff;
+    --primary-solid: #2563eb;
+    --primary-light: #eff6ff;
+    --text-title: #0f172a;
+    --text-body: #475569;
+    --text-muted: #94a3b8;
+    --border-subtle: #e2e8f0;
+    --star-active: #f59e0b;
+    --star-inactive: #e2e8f0;
+}
+
+body {
+    background-color: var(--bg-page);
+}
+
+.profile-view-container {
+    max-width: 1100px;
+    margin: 3rem auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+/* Base Card Style */
+.v-card {
+    background: var(--card-bg);
+    border-radius: 1.25rem;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+/* Left Sidebar - Profile identity */
+.v-profile-header {
+    text-align: center;
+    position: relative;
+    padding-bottom: 2rem;
+}
+.v-cover-photo {
+    height: 120px;
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+    width: 100%;
+}
+.v-avatar-wrapper {
+    width: 140px;
+    height: 140px;
+    margin: -70px auto 1rem auto;
+    position: relative;
+    border-radius: 50%;
+    border: 5px solid white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    background: white;
+}
+.v-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.v-avatar-initial {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary-solid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    font-weight: 800;
+}
+.v-name {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-title);
+    margin: 0 0 0.25rem 0;
+    padding: 0 1rem;
+}
+.v-title {
+    font-size: 1rem;
+    color: var(--primary-solid);
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    padding: 0 1rem;
+}
+.v-contact-box {
+    text-align: left;
+    padding: 0 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.v-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.v-contact-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--bg-page);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: var(--text-body);
+}
+.v-contact-data {
+    display: flex;
+    flex-direction: column;
+}
+.v-contact-data label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+.v-contact-data span {
+    font-size: 0.95rem;
+    color: var(--text-title);
+    font-weight: 500;
+    word-break: break-all;
+}
+
+/* CV Download Card */
+.cv-download-card {
+    padding: 2rem;
+    text-align: center;
+    background: linear-gradient(to bottom, #ffffff, #f8fafc);
+}
+.cv-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #ef4444; /* PDF Red */
+}
+.cv-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--text-title);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+.cv-btn:hover {
+    background: #000000;
+    transform: translateY(-2px);
+}
+
+/* Right Content Area */
+.v-section-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-title);
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-subtle);
+}
+.v-section-body {
+    padding: 2rem;
+}
+.v-bio-text {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-body);
+    white-space: pre-wrap;
+}
+
+/* Reviews / Reseñas Config */
+.reviews-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.review-item {
+    padding: 1.5rem;
+    border-radius: 1rem;
+    background: var(--bg-page);
+    border: 1px solid var(--border-subtle);
+}
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+.reviewer-info {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+.reviewer-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 1.25rem;
+}
+.reviewer-details h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-title);
+}
+.reviewer-details p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+.review-stars {
+    display: flex;
+    gap: 0.25rem;
+    font-size: 1.25rem;
+    color: var(--star-active);
+}
+.review-text {
+    font-size: 0.95rem;
+    color: var(--text-body);
+    line-height: 1.6;
+    font-style: italic;
+}
+.review-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+    display: block;
+}
+
+/* Edit action for owner */
+.edit-profile-action {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--primary-solid);
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 50;
+    text-decoration: none;
+}
+.edit-profile-action:hover {
+    transform: scale(1.1) rotate(10deg);
+    background: var(--primary-blue-hover);
+}
+
+@media (max-width: 992px) {
+    .profile-view-container {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<!-- Floating edit button if user owns profile -->
+{% if request.user == profile.user %}
+<a href="{% url 'editar_perfil' %}" class="edit-profile-action" title="Editar mi perfil">
+    ✏️
+</a>
+{% endif %}
+
+<div class="profile-view-container">
+    
+    <!-- Left Column: Identity & Contact -->
+    <div class="v-left-column">
+        
+        <div class="v-card v-profile-header">
+            <div class="v-cover-photo"></div>
+            <div class="v-avatar-wrapper">
+                {% if profile.foto_perfil %}
+                    <img src="{{ profile.foto_perfil.url }}" alt="Avatar" class="v-avatar">
+                {% else %}
+                    <div class="v-avatar-initial">{{ profile.user.username|make_list|first|upper }}</div>
+                {% endif %}
+            </div>
+            
+            <h1 class="v-name">{{ profile.nombre_visualizacion|default:profile.user.username }}</h1>
+            <h2 class="v-title">{{ profile.cargo_titulo|default:"Profesional en Búsqueda" }}</h2>
+            
+            <div class="v-contact-box">
+                <div class="v-contact-item">
+                    <div class="v-contact-icon">✉️</div>
+                    <div class="v-contact-data">
+                        <label>Correo Electrónico</label>
+                        <span>{{ profile.user.email }}</span>
+                    </div>
+                </div>
+                
+                {% if profile.telefono %}
+                <div class="v-contact-item">
+                    <div class="v-contact-icon">📱</div>
+                    <div class="v-contact-data">
+                        <label>Teléfono Movil</label>
+                        <span>{{ profile.telefono }}</span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="v-contact-item">
+                    <div class="v-contact-icon">🔗</div>
+                    <div class="v-contact-data">
+                        <label>Nombre de Usuario</label>
+                        <span>@{{ profile.user.username }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="v-card cv-download-card">
+            <div class="cv-icon">📄</div>
+            <h3 style="margin:0 0 0.5rem 0; font-weight:800; color:var(--text-title);">Hoja de Vida</h3>
+            {% if profile.hoja_de_vida %}
+                <p style="font-size:0.875rem; color:var(--text-body); margin-bottom: 1.5rem;">Documento PDF verificado</p>
+                <a href="{{ profile.hoja_de_vida.url }}" target="_blank" class="cv-btn">
+                    Descargar CV ⬇️
+                </a>
+            {% else %}
+                <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom: 1.5rem;">El usuario no ha publicado su hoja de vida aún.</p>
+                <div class="cv-btn" style="background:#e2e8f0; color:#94a3b8; cursor:not-allowed; box-shadow:none;">
+                    No disponible
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- Right Column: Content -->
+    <div class="v-right-column">
+        
+        <!-- Bio -->
+        <div class="v-card">
+            <div class="v-section-body">
+                <h3 class="v-section-title">
+                    <span>💡</span> Sobre Mí / Descripción
+                </h3>
+                {% if profile.descripcion %}
+                    <div class="v-bio-text">{{ profile.descripcion }}</div>
+                {% else %}
+                    <p style="color:var(--text-muted); font-style:italic;">Este usuario aún no ha agregado una descripción a su perfil.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Reviews / Reseñas -->
+        <div class="v-card">
+            <div class="v-section-body">
+                <h3 class="v-section-title">
+                    <span>⭐</span> Reseñas y Recomendaciones
+                </h3>
+                
+                <div class="reviews-container">
+                    {% if profile.resenas.all %}
+                        {% for resena in profile.resenas.all %}
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div class="reviewer-info">
+                                    <div class="reviewer-avatar" style="background: hsl({{ forloop.counter|add:200 }}, 60%, 60%);">
+                                        {{ resena.autor|make_list|first|upper }}
+                                    </div>
+                                    <div class="reviewer-details">
+                                        <h4>{{ resena.autor }}</h4>
+                                        <p>{{ resena.empresa|default:"Recomendación Profesional" }}</p>
+                                    </div>
+                                </div>
+                                <div class="review-stars">
+                                    {% for i in "12345" %}
+                                        <span style="{% if forloop.counter <= resena.calificacion %}color:var(--star-active);{% else %}color:var(--star-inactive);{% endif %}">★</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="review-text">
+                                "{{ resena.comentario }}"
+                            </div>
+                            <span class="review-date">{{ resena.fecha|date:"d M Y" }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="text-align:center; padding: 2rem;">
+                            <span style="font-size: 3rem; color: #cbd5e1; display:block; margin-bottom:1rem;">📝</span>
+                            <p style="color:var(--text-muted); font-weight:500;">Aún no hay reseñas registradas para este postulante.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

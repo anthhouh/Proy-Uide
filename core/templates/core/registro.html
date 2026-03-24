@@ -72,9 +72,10 @@ body { background-color: #f8fafc; }
             <p class="auth-subtitle">Únete a la plataforma de empleo líder en Loja</p>
         </div>
         
-        <form id="registerForm">
+        <form id="registerForm" method="POST" action="{% url 'registro' %}">
+            {% csrf_token %}
             <!-- Hidden input for JS compatibility -->
-            <input type="hidden" id="regRole" value="postulante">
+            <input type="hidden" id="regRole" name="role" value="postulante">
             
             <div class="form-group">
                 <label>¿Cómo quieres usar la plataforma?</label>
@@ -94,7 +95,7 @@ body { background-color: #f8fafc; }
                 <label for="regName" id="lblRegName">Nombre completo</label>
                 <div style="position: relative;">
                     <span style="position: absolute; left: 1rem; top: 0.625rem; color: #9ca3af;">👤</span>
-                    <input type="text" id="regName" class="form-control" required placeholder="Ej. Juan Pérez" style="padding-left: 2.5rem;">
+                    <input type="text" id="regName" name="name" class="form-control" required placeholder="Ej. Juan Pérez" style="padding-left: 2.5rem;">
                 </div>
             </div>
 
@@ -102,7 +103,7 @@ body { background-color: #f8fafc; }
                 <label for="regEmail">Correo electrónico</label>
                 <div style="position: relative;">
                     <span style="position: absolute; left: 1rem; top: 0.625rem; color: #9ca3af;">✉️</span>
-                    <input type="email" id="regEmail" class="form-control" required placeholder="ejemplo@correo.com" style="padding-left: 2.5rem;">
+                    <input type="email" id="regEmail" name="email" class="form-control" required placeholder="ejemplo@correo.com" style="padding-left: 2.5rem;">
                 </div>
             </div>
 
@@ -110,7 +111,7 @@ body { background-color: #f8fafc; }
                 <label for="regPassword">Contraseña</label>
                 <div style="position: relative;">
                     <span style="position: absolute; left: 1rem; top: 0.625rem; color: #9ca3af;">🔒</span>
-                    <input type="password" id="regPassword" class="form-control" required placeholder="Mínimo 8 caracteres" style="padding-left: 2.5rem;">
+                    <input type="password" id="regPassword" name="password" class="form-control" required placeholder="Mínimo 8 caracteres" style="padding-left: 2.5rem;">
                 </div>
             </div>
 
