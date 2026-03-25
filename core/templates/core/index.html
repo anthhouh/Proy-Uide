@@ -231,18 +231,18 @@
         <h1 class="hero-title">Encuentra tu próximo<br><span>empleo en Loja</span></h1>
         <p class="hero-subtitle">Conectamos el talento lojano con las mejores empresas de la ciudad y la provincia. Tu futuro profesional empieza aquí.</p>
         
-        <div class="search-container">
+        <form class="search-container" method="GET" action="{% url 'index' %}">
             <div class="search-input-group">
                 <span style="color:#9ca3af;">🔍</span>
-                <input type="text" id="searchInput" placeholder="Cargo o palabra clave">
+                <input type="text" name="q" placeholder="Cargo o palabra clave" value="{{ q|default:'' }}">
             </div>
             <div class="search-divider"></div>
             <div class="search-input-group">
                 <span style="color:#9ca3af;">📍</span>
-                <input type="text" id="searchLocation" placeholder="Ubicación (Ej: Loja Centro)" value="">
+                <input type="text" name="u" placeholder="Ubicación (Ej: Loja Centro)" value="{{ u|default:'' }}">
             </div>
-            <button id="searchBtn" class="btn btn-primary search-btn">Buscar</button>
-        </div>
+            <button type="submit" class="btn btn-primary search-btn">Buscar</button>
+        </form>
         
         <div class="trending">
             Tendencias:
@@ -263,9 +263,38 @@
         <a href="#" class="text-primary font-semibold" style="display:flex; align-items:center; gap:0.25rem;">Ver todas las ofertas <span>→</span></a>
     </div>
     
-    <!-- ID used by app.js to render jobs -->
-    <div id="jobList" class="job-grid">
-        <!-- DOM elements will be inserted here by Javascript -->
+    <div class="job-grid">
+        {% for oferta in ofertas %}
+        <div class="job-card">
+            <div class="job-icon-header">
+                <div class="job-icon" style="overflow: hidden; background: white;">
+                    {% if oferta.empresa.empresa_logo %}
+                        <img src="{{ oferta.empresa.empresa_logo.url }}" alt="Logo" style="width:100%; height:100%; object-fit:cover;">
+                    {% else %}
+                        <span style="font-weight: 800; color: var(--primary-color);">{{ oferta.empresa.empresa_nombre|make_list|first|default:"E" }}</span>
+                    {% endif %}
+                </div>
+                <span class="badge badge-green" style="font-size: 0.75rem;">NUEVA</span>
+            </div>
+            <h3 class="job-title">{{ oferta.titulo }}</h3>
+            <div class="job-company" style="font-weight: 600;">{{ oferta.empresa.empresa_nombre }}</div>
+            <div class="job-details" style="flex-wrap: wrap;">
+                <span>📍 {{ oferta.ubicacion|default:"No especificada" }}</span>
+                <span>💼 {{ oferta.get_modalidad_display }}</span>
+                {% if oferta.sueldo %}
+                    <span style="color: var(--primary-color); font-weight: 600;">💵 {{ oferta.sueldo }}</span>
+                {% endif %}
+            </div>
+            <!-- In a future step, this would redirect to a real detail page. Using # for now. -->
+            <button class="btn btn-outline view-job-btn" style="width: 100%; font-weight: 600;">Ver Detalles</button>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: white; border-radius: 1rem; border: 1px dashed #cbd5e1;">
+            <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.4;">🔍</div>
+            <h3 style="color: var(--text-main); margin-bottom: 0.5rem; font-size: 1.5rem;">Aún no hay ofertas publicadas</h3>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">Pronto las empresas comenzarán a publicar sus vacantes aquí.</p>
+        </div>
+        {% endfor %}
     </div>
 </section>
 

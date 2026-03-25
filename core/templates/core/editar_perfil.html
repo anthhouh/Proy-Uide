@@ -2,366 +2,440 @@
 
 {% block content %}
 <style>
-/* Dashboard Base Colors */
-:root {
-    --bg-page: #f0f4f8;
-    --card-bg: #ffffff;
-    --primary-blue: #3b82f6;
-    --primary-blue-hover: #2563eb;
-    --text-dark: #1e293b;
-    --text-gray: #64748b;
-    --border-light: #e2e8f0;
-    --bg-input: #f8fafc;
-}
+    /* Dashboard Base Colors */
+    :root {
+        --bg-page: #f0f4f8;
+        --card-bg: #ffffff;
+        --primary-blue: #3b82f6;
+        --primary-blue-hover: #2563eb;
+        --text-dark: #1e293b;
+        --text-gray: #64748b;
+        --border-light: #e2e8f0;
+        --bg-input: #f8fafc;
+    }
 
-body {
-    background-color: var(--bg-page);
-}
+    body {
+        background-color: var(--bg-page);
+    }
 
-/* Dashboard Layout */
-.dashboard-layout {
-    display: flex;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-    gap: 2rem;
-    min-height: calc(100vh - 80px); /* header offset */
-}
+    /* Dashboard Layout */
+    .dashboard-layout {
+        display: flex;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        gap: 2rem;
+        min-height: calc(100vh - 80px);
+        /* header offset */
+    }
 
-/* Optional Sidebar (hidden for now to focus on profile, can be expanded) */
-.dash-sidebar {
-    width: 250px;
-    background: transparent;
-    display: none; /* Can be enabled if global sidebar is needed */
-}
+    /* Optional Sidebar (hidden for now to focus on profile, can be expanded) */
+    .dash-sidebar {
+        width: 250px;
+        background: transparent;
+        display: none;
+        /* Can be enabled if global sidebar is needed */
+    }
 
-/* Main Profile Content */
-.profile-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
+    /* Main Profile Content */
+    .profile-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
 
-/* Header Area */
-.profile-header-area {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 1rem;
-}
+    /* Header Area */
+    .profile-header-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 1rem;
+    }
 
-.breadcrumb {
-    font-size: 0.875rem;
-    color: var(--text-gray);
-    margin-bottom: 0.5rem;
-    display: flex;
-    gap: 0.5rem;
-}
-.breadcrumb span { color: var(--primary-blue); font-weight: 500; }
+    .breadcrumb {
+        font-size: 0.875rem;
+        color: var(--text-gray);
+        margin-bottom: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+    }
 
-.page-title {
-    font-size: 2rem;
-    font-weight: 800;
-    color: var(--text-dark);
-    margin: 0 0 0.5rem 0;
-}
-.page-subtitle {
-    font-size: 0.95rem;
-    color: var(--text-gray);
-    margin: 0;
-}
+    .breadcrumb span {
+        color: var(--primary-blue);
+        font-weight: 500;
+    }
 
-.header-actions {
-    display: flex;
-    gap: 1rem;
-}
-.btn-preview {
-    background: white;
-    border: 1px solid var(--border-light);
-    color: var(--text-dark);
-    font-weight: 600;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s;
-}
-.btn-preview:hover { background: #f8fafc; }
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text-dark);
+        margin: 0 0 0.5rem 0;
+    }
 
-.btn-save {
-    background: var(--primary-blue);
-    border: none;
-    color: white;
-    font-weight: 600;
-    padding: 0.75rem 2rem;
-    border-radius: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
-    transition: all 0.2s;
-}
-.btn-save:hover { background: var(--primary-blue-hover); transform: translateY(-1px); }
+    .page-subtitle {
+        font-size: 0.95rem;
+        color: var(--text-gray);
+        margin: 0;
+    }
 
-/* Grid Layout for Profile Cards */
-.profile-grid {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 1.5rem;
-    align-items: start;
-}
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
 
-/* Card Styles */
-.card {
-    background: var(--card-bg);
-    border-radius: 1rem;
-    box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05);
-    border: 1px solid var(--border-light);
-    overflow: hidden;
-}
-.card-body {
-    padding: 1.5rem;
-}
-.card-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--text-dark);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-}
-.card-title-icon { color: var(--primary-blue); }
+    .btn-preview {
+        background: white;
+        border: 1px solid var(--border-light);
+        color: var(--text-dark);
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
 
-/* Left Sidebar Profile Badge Card */
-.profile-badge-card {
-    text-align: center;
-    position: relative;
-    padding-bottom: 1.5rem;
-}
-.badge-header-bg {
-    height: 100px;
-    background: var(--primary-blue);
-    width: 100%;
-    border-radius: 1rem 1rem 0 0;
-}
-.avatar-container {
-    width: 120px;
-    height: 120px;
-    margin: -60px auto 1rem auto;
-    position: relative;
-    border-radius: 50%;
-    border: 4px solid white;
-    background: white;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-.avatar-img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-}
-.avatar-placeholder {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: #e2e8f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    color: #94a3b8;
-    font-weight: bold;
-}
-.avatar-edit-btn {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    background: var(--primary-blue);
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid white;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-.avatar-edit-btn input[type="file"] {
-    position: absolute;
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-}
-.badge-name { font-size: 1.5rem; font-weight: 800; color: var(--text-dark); margin: 0 0 0.25rem 0;}
-.badge-title { font-size: 0.95rem; color: var(--text-gray); margin-bottom: 1.5rem;}
+    .btn-preview:hover {
+        background: #f8fafc;
+    }
 
-.contact-info-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 0 1.5rem;
-}
-.contact-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: var(--bg-input);
-    border-radius: 0.5rem;
-    border: 1px solid var(--border-light);
-    text-align: left;
-}
-.contact-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #e0f2fe;
-    color: var(--primary-blue);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-.contact-text label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--text-gray);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.1rem;
-}
-.contact-text span {
-    font-size: 0.95rem;
-    color: var(--text-dark);
-    font-weight: 500;
-    word-break: break-all;
-}
+    .btn-save {
+        background: var(--primary-blue);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+        transition: all 0.2s;
+    }
 
-/* Upload CV Card */
-.upload-box {
-    border: 2px dashed #cbd5e1;
-    border-radius: 0.75rem;
-    padding: 2rem 1rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: #f8fafc;
-    position: relative;
-}
-.upload-box:hover {
-    border-color: var(--primary-blue);
-    background: #eff6ff;
-}
-.upload-icon {
-    font-size: 2rem;
-    color: var(--primary-blue);
-    margin-bottom: 1rem;
-}
-.upload-title {
-    font-weight: 700;
-    color: var(--text-dark);
-    margin-bottom: 0.25rem;
-}
-.upload-subtitle {
-    font-size: 0.8rem;
-    color: var(--text-gray);
-}
-.hidden-file-input {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    opacity: 0; cursor: pointer;
-}
-.file-uploaded-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem;
-    background: #f1f5f9;
-    border-radius: 0.5rem;
-    margin-top: 1rem;
-    border: 1px solid #e2e8f0;
-}
-.file-name-display {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: var(--text-dark);
-}
-.file-name-display::before { content: "📄"; color: #ef4444; }
+    .btn-save:hover {
+        background: var(--primary-blue-hover);
+        transform: translateY(-1px);
+    }
 
-/* Forms Configuration */
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-}
-.form-group label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--text-dark);
-    margin-bottom: 0.5rem;
-}
-.form-control {
-    width: 100%;
-    padding: 0.875rem 1rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
-    background-color: var(--bg-input);
-    font-family: inherit;
-    font-size: 1rem;
-    color: var(--text-dark);
-    transition: all 0.2s;
-}
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary-blue);
-    background-color: white;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-/* Bio area */
-.bio-card .form-control { resize: vertical; min-height: 150px; }
+    /* Grid Layout for Profile Cards */
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 1.5rem;
+        align-items: start;
+    }
 
-/* Error list */
-.errorlist {
-    color: #ef4444;
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
-    list-style: none;
-    padding: 0;
-}
+    /* Card Styles */
+    .card {
+        background: var(--card-bg);
+        border-radius: 1rem;
+        box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+    }
 
-@media (max-width: 992px) {
-    .profile-grid { grid-template-columns: 1fr; }
-    .form-grid { grid-template-columns: 1fr; }
-    .profile-header-area { flex-direction: column; align-items: flex-start; gap: 1rem;}
-}
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-title-icon {
+        color: var(--primary-blue);
+    }
+
+    /* Left Sidebar Profile Badge Card */
+    .profile-badge-card {
+        text-align: center;
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+
+    .badge-header-bg {
+        height: 100px;
+        background: var(--primary-blue);
+        width: 100%;
+        border-radius: 1rem 1rem 0 0;
+    }
+
+    .avatar-container {
+        width: 120px;
+        height: 120px;
+        margin: -60px auto 1rem auto;
+        position: relative;
+        border-radius: 50%;
+        border: 4px solid white;
+        background: white;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .avatar-img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: #94a3b8;
+        font-weight: bold;
+    }
+
+    .avatar-edit-btn {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: var(--primary-blue);
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .avatar-edit-btn input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .badge-name {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-dark);
+        margin: 0 0 0.25rem 0;
+    }
+
+    .badge-title {
+        font-size: 0.95rem;
+        color: var(--text-gray);
+        margin-bottom: 1.5rem;
+    }
+
+    .contact-info-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0 1.5rem;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--bg-input);
+        border-radius: 0.5rem;
+        border: 1px solid var(--border-light);
+        text-align: left;
+    }
+
+    .contact-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #e0f2fe;
+        color: var(--primary-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .contact-text label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-gray);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.1rem;
+    }
+
+    .contact-text span {
+        font-size: 0.95rem;
+        color: var(--text-dark);
+        font-weight: 500;
+        word-break: break-all;
+    }
+
+    /* Upload CV Card */
+    .upload-box {
+        border: 2px dashed #cbd5e1;
+        border-radius: 0.75rem;
+        padding: 2rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #f8fafc;
+        position: relative;
+    }
+
+    .upload-box:hover {
+        border-color: var(--primary-blue);
+        background: #eff6ff;
+    }
+
+    .upload-icon {
+        font-size: 2rem;
+        color: var(--primary-blue);
+        margin-bottom: 1rem;
+    }
+
+    .upload-title {
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .upload-subtitle {
+        font-size: 0.8rem;
+        color: var(--text-gray);
+    }
+
+    .hidden-file-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .file-uploaded-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        background: #f1f5f9;
+        border-radius: 0.5rem;
+        margin-top: 1rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .file-name-display {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--text-dark);
+    }
+
+    .file-name-display::before {
+        content: "📄";
+        color: #ef4444;
+    }
+
+    /* Forms Configuration */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.5rem;
+        background-color: var(--bg-input);
+        font-family: inherit;
+        font-size: 1rem;
+        color: var(--text-dark);
+        transition: all 0.2s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        background-color: white;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Bio area */
+    .bio-card .form-control {
+        resize: vertical;
+        min-height: 150px;
+    }
+
+    /* Error list */
+    .errorlist {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        list-style: none;
+        padding: 0;
+    }
+
+    @media (max-width: 992px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-header-area {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+    }
 </style>
 
 <div class="dashboard-layout">
-    
+
     <!-- Profile Content Area -->
     <div class="profile-content">
-        
+
         <form method="POST" enctype="multipart/form-data" id="mainProfileForm">
             {% csrf_token %}
-            
+
             {% if messages %}
             <div style="margin-bottom: 1.5rem;">
                 {% for message in messages %}
-                <div style="padding: 1rem; border-radius: 0.5rem; font-weight: 500; {% if message.tags == 'success' %}background: #dcfce7; border: 1px solid #22c55e; color: #166534;{% else %}background: #fee2e2; border: 1px solid #ef4444; color: #991b1b;{% endif %}">
+                <div
+                    style="padding: 1rem; border-radius: 0.5rem; font-weight: 500; {% if message.tags == 'success' %}background: #dcfce7; border: 1px solid #22c55e; color: #166534;{% else %}background: #fee2e2; border: 1px solid #ef4444; color: #991b1b;{% endif %}">
                     {{ message }}
                 </div>
                 {% endfor %}
@@ -369,7 +443,8 @@ body {
             {% endif %}
 
             {% if profile_form.errors or user_form.errors %}
-            <div style="padding: 1rem; background: #fee2e2; border: 1px solid #ef4444; color: #991b1b; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+            <div
+                style="padding: 1rem; background: #fee2e2; border: 1px solid #ef4444; color: #991b1b; border-radius: 0.5rem; margin-bottom: 1.5rem;">
                 <strong>Por favor, corrige los siguientes errores:</strong><br>
                 {{ profile_form.hoja_de_vida.errors }}
                 {{ user_form.username.errors }}
@@ -384,7 +459,8 @@ body {
                         Configuración > <span>Perfil del Profesional</span>
                     </div>
                     <h1 class="page-title">Mi Perfil Profesional</h1>
-                    <p class="page-subtitle">Mantén tu información actualizada para mejorar tus oportunidades laborales en Loja.</p>
+                    <p class="page-subtitle">Mantén tu información actualizada para mejorar tus oportunidades laborales
+                        en Loja.</p>
                 </div>
                 <div class="header-actions">
                     <a href="{% url 'perfil' %}" class="btn-preview">👁️ Vista Previa</a>
@@ -394,29 +470,31 @@ body {
 
             <!-- Content Grid -->
             <div class="profile-grid">
-                
+
                 <!-- Left Sidebar -->
                 <div class="left-column" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    
+
                     <!-- Profile Badge Card -->
                     <div class="card profile-badge-card">
                         <div class="badge-header-bg"></div>
                         <div class="avatar-container">
                             {% if profile_form.instance.foto_perfil %}
-                                <img src="{{ profile_form.instance.foto_perfil.url }}" alt="Profile Avatar" class="avatar-img" id="avatarPreview">
+                            <img src="{{ profile_form.instance.foto_perfil.url }}" alt="Profile Avatar"
+                                class="avatar-img" id="avatarPreview">
                             {% else %}
-                                <div class="avatar-placeholder" id="avatarPreviewAlt">{{ user.username|make_list|first|upper }}</div>
-                                <img src="" alt="" class="avatar-img" id="avatarPreview" style="display: none;">
+                            <div class="avatar-placeholder" id="avatarPreviewAlt">{{ user.username|make_list|first|upper }}</div>
+                            <img src="" alt="" class="avatar-img" id="avatarPreview" style="display: none;">
                             {% endif %}
-                            
+
                             <div class="avatar-edit-btn" title="Cambiar foto">
                                 📷
                                 {{ profile_form.foto_perfil }}
                             </div>
                         </div>
-                        <h2 class="badge-name">{{ profile_form.instance.nombre_visualizacion|default:user.username }}</h2>
+                        <h2 class="badge-name">{{ profile_form.instance.nombre_visualizacion|default:user.username }}
+                        </h2>
                         <p class="badge-title">{{ profile_form.instance.cargo_titulo|default:"Añade tu cargo o título profesional" }}</p>
-                        
+
                         <div class="contact-info-list">
                             <div class="contact-item">
                                 <div class="contact-icon">✉️</div>
@@ -439,18 +517,29 @@ body {
                     <div class="card">
                         <div class="card-body">
                             <h3 class="card-title"><span class="card-title-icon">☁️</span> Hoja de vida / Curriculo</h3>
-                            
+
                             <div class="upload-box" id="cv_upload_box">
                                 <div class="upload-icon">📄</div>
                                 <div class="upload-title" id="cv_upload_title">Cargar nuevo archivo</div>
                                 <div class="upload-subtitle" id="cv_upload_subtitle">PDF (Max. 5MB)</div>
                                 {{ profile_form.hoja_de_vida }}
                             </div>
-                            
+
                             {% if profile_form.instance.hoja_de_vida %}
                             <div class="file-uploaded-indicator">
-                                <div class="file-name-display">{{ profile_form.instance.hoja_de_vida.name|title }}</div>
-                                <a href="{{ profile_form.instance.hoja_de_vida.url }}" target="_blank" style="color:var(--text-gray); text-decoration:none;" title="Descargar">⬇️</a>
+                                <div class="file-name-display" style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 1rem;" title="{{ profile_form.instance.hoja_de_vida.name }}">{{ profile_form.instance.hoja_de_vida.name|title }}</div>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <a href="{{ profile_form.instance.hoja_de_vida.url }}" target="_blank"
+                                        style="color:var(--text-gray); text-decoration:none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 4px; background: #e2e8f0; transition: background 0.2s;"
+                                        title="Descargar" onmouseover="this.style.background='#cbd5e1'"
+                                        onmouseout="this.style.background='#e2e8f0'">⬇️</a>
+
+                                    <button type="submit" formaction="{% url 'eliminar_cv' %}" onclick="return confirm('¿Estás seguro de que deseas eliminar tu hoja de vida?');"
+                                        style="background: #fee2e2; border: 1px solid #f87171; color: #ef4444; border-radius: 4px; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"
+                                        title="Eliminar"
+                                        onmouseover="this.style.background='#fca5a5'; this.style.color='black'"
+                                        onmouseout="this.style.background='#fee2e2'; this.style.color='#ef4444'">🗑️</button>
+                                </div>
                             </div>
                             {% endif %}
                         </div>
@@ -460,12 +549,12 @@ body {
 
                 <!-- Right Column Forms -->
                 <div class="right-column" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    
+
                     <!-- Detailed Info Card -->
                     <div class="card">
                         <div class="card-body">
                             <h3 class="card-title"><span class="card-title-icon">👤</span> Información Detallada</h3>
-                            
+
                             <div class="form-grid">
                                 <div class="form-group">
                                     <label>Nombre de Visualización</label>
@@ -509,15 +598,15 @@ body {
 
 <script>
     // Preview selected image
-    document.getElementById('foto_perfil_input').addEventListener('change', function(event){
-        if(event.target.files && event.target.files[0]){
+    document.getElementById('foto_perfil_input').addEventListener('change', function (event) {
+        if (event.target.files && event.target.files[0]) {
             var reader = new FileReader();
-            reader.onload = function(e){
+            reader.onload = function (e) {
                 var avatarPreview = document.getElementById('avatarPreview');
                 var avatarPreviewAlt = document.getElementById('avatarPreviewAlt');
                 avatarPreview.src = e.target.result;
                 avatarPreview.style.display = 'block';
-                if(avatarPreviewAlt) avatarPreviewAlt.style.display = 'none';
+                if (avatarPreviewAlt) avatarPreviewAlt.style.display = 'none';
             }
             reader.readAsDataURL(event.target.files[0]);
         }
@@ -526,11 +615,11 @@ body {
     // Display selected CV file name
     var cvInput = document.getElementById('cv_input');
     if (cvInput) {
-        cvInput.addEventListener('change', function(event) {
+        cvInput.addEventListener('change', function (event) {
             var title = document.getElementById('cv_upload_title');
             var subtitle = document.getElementById('cv_upload_subtitle');
             var box = document.getElementById('cv_upload_box');
-            
+
             if (event.target.files && event.target.files.length > 0) {
                 var file = event.target.files[0];
                 if (!file.name.toLowerCase().endsWith('.pdf')) {

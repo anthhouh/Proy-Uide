@@ -1,13 +1,27 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Profile
-from .forms import UserEditForm, ProfileEditForm
+from .models import Profile, Oferta
+from .forms import UserEditForm, ProfileEditForm, EmpresaProfileEditForm, OfertaForm
 
 def index(request):
-    return render(request, 'core/index.html')
+    query = request.GET.get('q', '')
+    ubicacion = request.GET.get('u', '')
+    
+    ofertas = Oferta.objects.filter(estado=True)
+    if query:
+        ofertas = ofertas.filter(titulo__icontains=query)
+    if ubicacion:
+        ofertas = ofertas.filter(ubicacion__icontains=ubicacion)
+        
+    ofertas = ofertas.order_by('-fecha_publicacion')[:6]
+    return render(request, 'core/index.html', {
+        'ofertas': ofertas,
+        'q': query,
+        'u': ubicacion
+    })
 
 def registro(request):
     if request.method == 'POST':
@@ -63,9 +77,20 @@ def perfil(request):
 @login_required
 def editar_perfil(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
+    
+    # Seleccionar formulario y plantilla base según el rol
+    if profile.role == 'empresa':
+        ProfileFormClass = EmpresaProfileEditForm
+        template_name = 'core/editar_perfil_empresa.html'
+        ofertas = Oferta.objects.filter(empresa=profile).order_by('-fecha_publicacion')
+    else:
+        ProfileFormClass = ProfileEditForm
+        template_name = 'core/editar_perfil.html'
+        ofertas = None
+
     if request.method == 'POST':
         user_form = UserEditForm(request.POST, instance=request.user)
-        profile_form = ProfileEditForm(request.POST, request.FILES, instance=profile)
+        profile_form = ProfileFormClass(request.POST, request.FILES, instance=profile)
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
@@ -73,9 +98,51 @@ def editar_perfil(request):
             return redirect('perfil')
     else:
         user_form = UserEditForm(instance=request.user)
-        profile_form = ProfileEditForm(instance=profile)
+        profile_form = ProfileFormClass(instance=profile)
         
-    return render(request, 'core/editar_perfil.html', {
+    return render(request, template_name, {
         'user_form': user_form,
-        'profile_form': profile_form
+        'profile_form': profile_form,
+        'ofertas': ofertas
     })
+
+@login_required
+def eliminar_cv(request):
+    if request.method == 'POST':
+        profile = getattr(request.user, 'profile', None)
+        if profile and profile.hoja_de_vida:
+            profile.hoja_de_vida.delete(save=True) # Deletes the file and sets field to empty
+            messages.success(request, 'Hoja de vida eliminada exitosamente.')
+        else:
+            messages.error(request, 'No se pudo eliminar la hoja de vida o no existe.')
+    return redirect('editar_perfil')
+
+@login_required
+def crear_oferta(request):
+    profile = getattr(request.user, 'profile', None)
+    if not profile or profile.role != 'empresa':
+        messages.error(request, 'No tienes permiso para crear ofertas.')
+        return redirect('dashboard')
+        
+    if request.method == 'POST':
+        form = OfertaForm(request.POST)
+        if form.is_valid():
+            oferta = form.save(commit=False)
+            oferta.empresa = profile
+            oferta.save()
+            messages.success(request, '¡Vacante publicada exitosamente!')
+            return redirect('editar_perfil')
+    else:
+        form = OfertaForm()
+        
+    return render(request, 'core/crear_oferta.html', {'form': form})
+
+@login_required
+def eliminar_oferta(request, oferta_id):
+    if request.method == 'POST':
+        oferta = get_object_or_404(Oferta, id=oferta_id, empresa=request.user.profile)
+        oferta.delete()
+        messages.success(request, "Vacante eliminada exitosamente.")
+    return redirect('perfil')
+
+

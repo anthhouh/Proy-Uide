@@ -1,0 +1,576 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<style>
+    /* Dashboard Base Colors */
+    :root {
+        --bg-page: #f8fafc;
+        --card-bg: #ffffff;
+        --primary-blue: #2563eb;
+        --primary-blue-hover: #1d4ed8;
+        --primary-blue-light: #eff6ff;
+        --text-dark: #0f172a;
+        --text-gray: #64748b;
+        --text-gray-light: #94a3b8;
+        --border-light: #e2e8f0;
+        --bg-input: #f1f5f9;
+        --success-color: #22c55e;
+        --danger-color: #ef4444;
+    }
+
+    body {
+        background-color: var(--bg-page);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Layout */
+    .dashboard-layout {
+        display: flex;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 2rem;
+        gap: 2rem;
+        min-height: calc(100vh - 80px);
+    }
+
+    .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    /* Header */
+    .header-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 0.5rem;
+    }
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--text-dark);
+        margin: 0 0 0.25rem 0;
+    }
+    .page-subtitle {
+        font-size: 0.95rem;
+        color: var(--text-gray);
+        margin: 0;
+    }
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+    .btn-outline {
+        background: white;
+        border: 1px solid var(--border-light);
+        color: var(--text-dark);
+        font-weight: 600;
+        padding: 0.6rem 1.25rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+    .btn-outline:hover { background: var(--bg-input); }
+    .btn-primary {
+        background: var(--primary-blue);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    }
+    .btn-primary:hover { background: var(--primary-blue-hover); transform: translateY(-1px); }
+
+    /* Grid Layout */
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    /* Cards */
+    .card {
+        background: var(--card-bg);
+        border-radius: 1rem;
+        box-shadow: 0 4px 15px -5px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border-light);
+        padding: 1.5rem;
+    }
+
+    /* Form Styles */
+    .form-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-gray);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.5rem;
+        background-color: var(--bg-input);
+        font-family: inherit;
+        font-size: 0.95rem;
+        color: var(--text-dark);
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        background-color: white;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .form-grid-inner {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    /* Logo Upload Area */
+    .logo-upload-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .logo-box {
+        width: 100px;
+        height: 100px;
+        border: 2px dashed #cbd5e1;
+        border-radius: 1rem;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        cursor: pointer;
+        overflow: hidden;
+    }
+    .logo-box:hover { border-color: var(--primary-blue); background: var(--primary-blue-light); }
+    .logo-img { width: 100%; height: 100%; object-fit: cover; }
+    .hidden-file-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10; }
+    .change-logo-text { font-size: 0.75rem; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; margin-top: 0.5rem; text-align: center; cursor: pointer;}
+    .logo-right-fields { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;}
+
+    /* Offers Section fake */
+    .section-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 2rem 0 1rem 0;
+    }
+    .section-title h3 { font-size: 1.25rem; font-weight: 700; color: var(--text-dark); margin: 0; }
+    .section-title a { font-size: 0.875rem; color: var(--primary-blue); text-decoration: none; font-weight: 600; }
+    
+    .offers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .offer-card { border: 1px solid var(--border-light); border-radius: 0.75rem; padding: 1rem; background: white; }
+    .offer-badge { background: #dcfce7; color: #166534; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 1rem; text-transform: uppercase; }
+    .offer-time { font-size: 0.75rem; color: var(--text-gray); float: right; }
+    .offer-title { font-weight: 700; color: var(--text-dark); margin: 0.75rem 0 0.25rem 0; }
+    .offer-desc { font-size: 0.85rem; color: var(--text-gray); margin-bottom: 0.75rem; }
+    .offer-stats { font-size: 0.85rem; color: var(--text-dark); font-weight: 600; display: flex; align-items: center; gap: 0.25rem; }
+    
+    .btn-dashed {
+        width: 100%;
+        padding: 1rem;
+        border: 2px dashed #cbd5e1;
+        border-radius: 0.75rem;
+        background: transparent;
+        color: var(--text-dark);
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+    }
+    .btn-dashed:hover { border-color: var(--primary-blue); color: var(--primary-blue); background: var(--primary-blue-light); }
+
+    /* Social Links */
+    .social-links { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-top: 1rem; }
+    .social-pill {
+        border: 1px solid var(--border-light);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: white;
+        font-size: 0.75rem;
+        color: var(--text-dark);
+        font-weight: 600;
+    }
+    .social-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+    .li-icon { background: #eff6ff; color: #2563eb; }
+    .ig-icon { background: #fdf2f8; color: #ec4899; }
+    .tw-icon { background: #f0f9ff; color: #0ea5e9; }
+
+    /* Right Column Widgets */
+    
+    /* Follow/Stats Card */
+    .stats-card {
+        background: var(--primary-blue);
+        color: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+    }
+    .stats-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+    .stats-logo-mini { width: 48px; height: 48px; background: #1e3a8a; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; }
+    .stats-text { text-align: left; }
+    .stats-name { font-weight: 700; font-size: 1.1rem; margin: 0;}
+    .stats-followers { font-size: 0.85rem; color: #bfdbfe; margin: 0; }
+    .btn-white { background: white; color: var(--primary-blue); border: none; width: 100%; padding: 0.75rem; border-radius: 0.5rem; font-weight: 700; cursor: pointer; margin-bottom: 0.5rem; }
+    .stats-footer { font-size: 0.75rem; color: #93c5fd; }
+
+    /* Recruiter Card */
+    .recruiter-header { text-align: center; margin-bottom: 1.5rem; }
+    .recruiter-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 0.75rem auto; border: 3px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: relative;}
+    .recruiter-avatar-placeholder { width: 80px; height: 80px; border-radius: 50%; background: var(--bg-input); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--text-gray); margin: 0 auto 0.75rem auto;}
+    .recruiter-name { font-size: 1.1rem; font-weight: 800; color: var(--text-dark); margin: 0 0 0.25rem 0;}
+    .recruiter-title { font-size: 0.85rem; color: var(--text-gray); margin: 0;}
+    .edit-link { display: block; text-align: center; font-size: 0.85rem; color: var(--primary-blue); font-weight: 600; text-decoration: none; margin-top: 1rem; }
+    
+    /* Map Card fake */
+    .map-card { padding: 0; overflow: hidden; position: relative;}
+    .map-img { width: 100%; height: 120px; object-fit: cover; background: #cbd5e1; }
+    .map-overlay { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.7)); padding: 2rem 1rem 0.75rem 1rem; color: white; font-size: 0.85rem; font-weight: 600;}
+    .map-text { padding: 1rem; font-size: 0.8rem; color: var(--text-gray); }
+
+    /* Strenght Card */
+    .strength-card { background: var(--primary-blue); color: white; border-radius: 1rem; padding: 1.5rem; position: relative; overflow: hidden; margin-top: 1.5rem;}
+    .strength-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem; position: relative; z-index: 2;}
+    .strength-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;}
+    .strength-percent { font-size: 1.5rem; font-weight: 800; margin: 0;}
+    .progress-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 3px; overflow: hidden; margin-bottom: 0.75rem; position: relative; z-index: 2;}
+    .progress-fill { height: 100%; background: white; width: 85%; border-radius: 3px; }
+    .strength-desc { font-size: 0.8rem; color: #bfdbfe; margin: 0; position: relative; z-index: 2; line-height: 1.4;}
+    .sparkle { position: absolute; bottom: -10px; right: -10px; font-size: 4rem; opacity: 0.2; transform: rotate(-15deg); line-height: 1; z-index: 1;}
+
+    /* Messages */
+    .messages-container { margin-bottom: 1.5rem; }
+    .alert { padding: 1rem; border-radius: 0.5rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .alert-success { background: #dcfce7; border: 1px solid #22c55e; color: #166534; }
+    .alert-error { background: #fee2e2; border: 1px solid #ef4444; color: #991b1b; }
+
+</style>
+
+<div class="dashboard-layout">
+    
+    <div class="main-content">
+        <form method="POST" enctype="multipart/form-data" id="empresaProfileForm">
+            {% csrf_token %}
+            
+            {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-error{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if profile_form.errors or user_form.errors %}
+            <div class="alert alert-error">
+                <strong>Por favor, corrige los siguientes errores:</strong><br>
+                {{ profile_form.errors }}
+                {{ user_form.errors }}
+            </div>
+            {% endif %}
+
+            <div class="header-area">
+                <div>
+                    <h1 class="page-title">Configuración de Empresa</h1>
+                    <p class="page-subtitle">Actualiza la identidad y los datos de contacto de tu organización.</p>
+                </div>
+                <div class="header-actions">
+                    <a href="{% url 'perfil' %}" class="btn-outline">Descartar</a>
+                    <button type="submit" class="btn-primary">Guardar Cambios</button>
+                </div>
+            </div>
+
+            <div class="profile-grid">
+                
+                <!-- Left Column -->
+                <div class="left-col">
+                    <div class="card">
+                        
+                        <div class="logo-upload-container">
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <div class="logo-box">
+                                    {% if profile_form.instance.empresa_logo %}
+                                        <img src="{{ profile_form.instance.empresa_logo.url }}" alt="Logo" class="logo-img" id="logoPreview">
+                                    {% else %}
+                                        <span style="font-size: 2rem; color: #94a3b8; font-weight: bold;" id="logoPreviewAlt">
+                                            {{ profile_form.instance.empresa_nombre|make_list|first|default:"M" }}
+                                        </span>
+                                        <img src="" alt="Logo" class="logo-img" id="logoPreview" style="display:none;">
+                                    {% endif %}
+                                    {{ profile_form.empresa_logo }}
+                                </div>
+                                <span class="change-logo-text" onclick="document.getElementById('logo_empresa_input').click()">Cambiar Logo</span>
+                            </div>
+                            
+                            <div class="logo-right-fields">
+                                <div>
+                                    <label class="form-label">Nombre de la empresa</label>
+                                    {{ profile_form.empresa_nombre }}
+                                </div>
+                                <div>
+                                    <label class="form-label">NIT/RUC</label>
+                                    {{ profile_form.empresa_ruc }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-grid-inner">
+                            <div>
+                                <label class="form-label">Sitio Web</label>
+                                <div style="position: relative;">
+                                    <span style="position: absolute; left: 1rem; top: 0.8rem; color: var(--text-gray);">🌐</span>
+                                    {{ profile_form.empresa_sitio_web }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label">Dirección Física</label>
+                                <div style="position: relative;">
+                                    <span style="position: absolute; left: 1rem; top: 0.8rem; color: var(--text-gray);">📍</span>
+                                    {{ profile_form.empresa_direccion }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label">Capacidad Máx. Empleados</label>
+                                <div style="position: relative;">
+                                    <span style="position: absolute; left: 1rem; top: 0.8rem; color: var(--text-gray);">👥</span>
+                                    {{ profile_form.empresa_capacidad_empleados }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label">Descripción de la empresa</label>
+                            {{ profile_form.descripcion }}
+                            <div style="text-align: right; font-size: 0.75rem; color: var(--text-gray); margin-top: 0.5rem;">Máximo 600 caracteres</div>
+                        </div>
+
+                    </div>
+
+                    <!-- Ofertas Publicadas (Dynamic) -->
+                    <div class="section-title">
+                        <h3>Ofertas Publicadas</h3>
+                        {% if ofertas %}
+                            <span style="font-size: 0.85rem; color: var(--text-gray); font-weight: 600;">{{ ofertas|length }} Registradas</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if ofertas %}
+                        <div class="offers-grid">
+                            {% for oferta in ofertas|slice:":4" %}
+                            <div class="offer-card">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                                    {% if oferta.estado %}
+                                        <span class="offer-badge" style="background: #dcfce7; color: #166534;">Activa</span>
+                                    {% else %}
+                                        <span class="offer-badge" style="background: #f1f5f9; color: #64748b;">Inactiva</span>
+                                    {% endif %}
+                                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                                        <span class="offer-time" style="float: none;">{{ oferta.fecha_publicacion|timesince }}</span>
+                                        <form method="POST" action="{% url 'eliminar_oferta' oferta.id %}" onsubmit="return confirm('¿Seguro que deseas eliminar esta oferta?');" style="margin: 0; padding: 0; display: inline-flex;">
+                                            {% csrf_token %}
+                                            <button type="submit" style="background: none; border: none; padding: 0; cursor: pointer; color: var(--danger-color); font-size: 1.1rem; line-height: 1; opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" title="Eliminar vacante">🗑️</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <h4 class="offer-title">{{ oferta.titulo }}</h4>
+                                <p class="offer-desc">{{ oferta.get_modalidad_display }} • {{ oferta.get_tipo_contrato_display }}</p>
+                                <div class="offer-stats">
+                                    📍 {{ oferta.ubicacion|default:"No especificada" }}
+                                    {% if oferta.sueldo %}
+                                        &nbsp;• 💵 {{ oferta.sueldo }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div style="background: white; border: 1px dashed #cbd5e1; border-radius: 0.75rem; padding: 2.5rem; text-align: center; margin-bottom: 1rem;">
+                            <div style="font-size: 2.5rem; margin-bottom: 0.5rem; filter: grayscale(1); opacity: 0.5;">📁</div>
+                            <h4 style="margin: 0 0 0.25rem 0; color: var(--text-dark);">Aún no tienes ofertas</h4>
+                            <p style="margin: 0; font-size: 0.85rem; color: var(--text-gray);">Publica tu primera vacante para empezar a recibir talento.</p>
+                        </div>
+                    {% endif %}
+                    
+                    <a href="{% url 'crear_oferta' %}" style="text-decoration: none; display: block; width: 100%;">
+                        <button type="button" class="btn-dashed">
+                            <span>➕</span> Crear Nueva Vacante
+                        </button>
+                    </a>
+
+                    <!-- Social Links Inputs wrapped as pills -->
+                    <div class="social-links">
+                        <div class="social-pill">
+                            <div class="social-icon li-icon">in</div>
+                            {{ profile_form.social_linkedin }}
+                        </div>
+                        <div class="social-pill">
+                            <div class="social-icon ig-icon">ig</div>
+                            {{ profile_form.social_instagram }}
+                        </div>
+                        <div class="social-pill">
+                            <div class="social-icon tw-icon">X</div>
+                            {{ profile_form.social_twitter }}
+                        </div>
+                    </div>
+                    <!-- Inline CSS adjust for social inputs -->
+                    <style>
+                        .social-pill input { border: none; background: transparent; width: 100%; font-size: 0.75rem; color: var(--text-dark); font-weight: 600; padding: 0;}
+                        .social-pill input:focus { outline: none; box-shadow: none; border: none; background: transparent;}
+                        .form-grid-inner .form-control { padding-left: 2.5rem; }
+                    </style>
+
+                </div>
+
+                <!-- Right Column -->
+                <div class="right-col">
+                    
+                    <!-- Recruiter Contact -->
+                    <div class="card" style="margin-bottom: 1.5rem;">
+                        <div class="form-label" style="text-transform: none; font-size: 1.1rem; color: var(--text-dark); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+                            <span style="color: var(--primary-blue);">👤</span> Contacto del Reclutador
+                        </div>
+                        
+                        <div class="recruiter-header">
+                            <div style="position: relative; overflow: visible; display: inline-block;">
+                                {% if profile_form.instance.foto_perfil %}
+                                    <img src="{{ profile_form.instance.foto_perfil.url }}" alt="Avatar" class="recruiter-avatar" id="avatarPreview">
+                                {% else %}
+                                    <div class="recruiter-avatar-placeholder" id="avatarPreviewAlt">{{ user.username|make_list|first|upper }}</div>
+                                    <img src="" alt="Avatar" class="recruiter-avatar" id="avatarPreview" style="display:none;">
+                                {% endif %}
+                                <div style="position: absolute; bottom: 0.5rem; right: -0.5rem; background: var(--border-light); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid white; z-index: 10;" onclick="document.getElementById('foto_perfil_input').click()">
+                                    📷
+                                </div>
+                                {{ profile_form.foto_perfil }}
+                            </div>
+                            
+                            <!-- We render normal inputs but styled minimally or we can use normal form-controls since it's an edit page -->
+                            <div style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+                                {{ profile_form.nombre_visualizacion }}
+                                {{ profile_form.cargo_titulo }}
+                            </div>
+                            <!-- Inline style adjust for these two -->
+                            <style>
+                                #id_nombre_visualizacion { text-align: center; font-weight: 800; font-size: 1.1rem; border: none; background: transparent; padding: 0; box-shadow: none;}
+                                #id_nombre_visualizacion:focus { background: var(--bg-input); border-radius: 4px; padding: 0.2rem;}
+                                #id_cargo_titulo { text-align: center; font-size: 0.85rem; color: var(--text-gray); border: none; background: transparent; padding: 0; box-shadow: none; margin-top: -0.25rem;}
+                                #id_cargo_titulo:focus { background: var(--bg-input); border-radius: 4px; padding: 0.2rem;}
+                            </style>
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label class="form-label">Email Corporativo</label>
+                            <div style="position: relative;">
+                                <span style="position: absolute; left: 1rem; top: 0.8rem; color: var(--text-gray);">✉️</span>
+                                {{ user_form.email }}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="form-label">Teléfono Directo</label>
+                            <div style="position: relative;">
+                                <span style="position: absolute; left: 1rem; top: 0.8rem; color: var(--text-gray);">📞</span>
+                                {{ profile_form.telefono }}
+                            </div>
+                        </div>
+                        <style>#id_email, #id_telefono { padding-left: 2.5rem; }</style>
+
+                        <a href="#" class="edit-link" onclick="document.getElementById('id_nombre_visualizacion').focus(); return false;">✎ Editar Información</a>
+                    </div>
+                    
+                    <!-- Map Card -->
+                    <div class="card map-card">
+                        <!-- A CSS generated map placeholder to match design -->
+                        <div style="width: 100%; height: 140px; background: #e2e8f0; position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: 30%; left: 20%; width: 12px; height: 12px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 0 4px rgba(239,68,68,0.3);"></div>
+                            <div style="position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; background: #3b82f6; border-radius: 50%; box-shadow: 0 0 0 4px rgba(59,130,246,0.3);"></div>
+                            <div style="position: absolute; top: 20%; right: 30%; width: 12px; height: 12px; background: #10b981; border-radius: 50%; box-shadow: 0 0 0 4px rgba(16,185,129,0.3);"></div>
+                            <svg width="100%" height="100%" style="opacity: 0.2;">
+                                <path d="M0 40 Q 100 10 200 60 T 400 30" stroke="#94a3b8" stroke-width="4" fill="none"/>
+                                <path d="M50 0 L 150 140" stroke="#94a3b8" stroke-width="4" fill="none"/>
+                            </svg>
+                            <div class="map-overlay">🗺️ Ver en mapa detallado</div>
+                        </div>
+                        <div class="map-text">
+                            Asegúrate de que la ubicación sea precisa para que los candidatos locales puedan encontrarte fácilmente.
+                        </div>
+                    </div>
+
+                    <!-- Strength -->
+                    <div class="strength-card">
+                        <div class="strength-header">
+                            <h4 class="strength-title">Fuerza del perfil</h4>
+                            <span class="strength-percent">85%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <p class="strength-desc">Tu perfil está casi completo. Agrega fotos de tus oficinas para alcanzar al 100%.</p>
+                        <div class="sparkle">✨</div>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Preview logo
+    document.getElementById('logo_empresa_input').addEventListener('change', function (event) {
+        if (event.target.files && event.target.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var preview = document.getElementById('logoPreview');
+                var alt = document.getElementById('logoPreviewAlt');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                if (alt) alt.style.display = 'none';
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    });
+
+    // Preview avatar
+    document.getElementById('foto_perfil_input').addEventListener('change', function (event) {
+        if (event.target.files && event.target.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var preview = document.getElementById('avatarPreview');
+                var alt = document.getElementById('avatarPreviewAlt');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                if (alt) alt.style.display = 'none';
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    });
+</script>
+{% endblock %}
