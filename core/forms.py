@@ -36,8 +36,8 @@ class EmpresaProfileEditForm(forms.ModelForm):
         model = Profile
         fields = [
             'nombre_visualizacion', 'cargo_titulo', 'telefono', 'foto_perfil', 'descripcion',
-            'empresa_nombre', 'empresa_ruc', 'empresa_sitio_web', 'empresa_direccion', 
-            'empresa_capacidad_empleados', 'empresa_logo', 
+            'empresa_nombre', 'empresa_ruc', 'empresa_sitio_web', 'empresa_direccion',
+            'empresa_mapa_url', 'empresa_capacidad_empleados', 'empresa_logo', 
             'social_linkedin', 'social_instagram', 'social_twitter'
         ]
         widgets = {
@@ -50,6 +50,7 @@ class EmpresaProfileEditForm(forms.ModelForm):
             'empresa_ruc': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ej. 1190234567001'}),
             'empresa_sitio_web': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://www.innovatech.com'}),
             'empresa_direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ej. Av. 10 de Agosto'}),
+            'empresa_mapa_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Link a ubicación en Google Maps'}),
             'empresa_capacidad_empleados': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ej. 250'}),
             'empresa_logo': forms.FileInput(attrs={'class': 'hidden-file-input', 'id': 'logo_empresa_input', 'accept': 'image/*'}),
             'social_linkedin': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'URL LinkedIn'}),

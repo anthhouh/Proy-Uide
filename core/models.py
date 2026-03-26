@@ -20,6 +20,7 @@ class Profile(models.Model):
     empresa_ruc = models.CharField(max_length=50, blank=True)
     empresa_sitio_web = models.URLField(blank=True)
     empresa_direccion = models.CharField(max_length=255, blank=True)
+    empresa_mapa_url = models.URLField(blank=True, verbose_name="Enlace de Google Maps")
     empresa_capacidad_empleados = models.CharField(max_length=100, blank=True)
     empresa_logo = models.ImageField(upload_to='empresas_logos/', null=True, blank=True)
     social_linkedin = models.URLField(blank=True)
@@ -65,3 +66,22 @@ class Oferta(models.Model):
 
     def __str__(self):
         return f"{self.titulo} - {self.empresa.empresa_nombre}"
+
+class ClasificacionCandidato(models.Model):
+    ESTADO_CHOICES = (
+        ('pendiente', 'Por Clasificar / Sin Revisar'),
+        ('entrevista_pendiente', 'Entrevista Pendiente'),
+        ('entrevistado', 'Entrevistado'),
+        ('cumple', 'Cumple Requisitos'),
+        ('no_cumple', 'No Cumple Requisitos'),
+    )
+    empresa = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='clasificaciones_hechas')
+    postulante = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='mis_clasificaciones')
+    estado = models.CharField(max_length=30, choices=ESTADO_CHOICES, default='pendiente')
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('empresa', 'postulante')
+
+    def __str__(self):
+        return f"{self.empresa.empresa_nombre} -> {self.postulante.user.username} ({self.estado})"

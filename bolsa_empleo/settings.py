@@ -75,8 +75,13 @@ WSGI_APPLICATION = 'bolsa_empleo.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'neondb',
+        'USER': 'neondb_owner',
+        'PASSWORD': 'npg_ku3eFltjxf7B',
+        'HOST': 'ep-misty-tree-amw7faby-pooler.c-5.us-east-1.aws.neon.tech',
+        'PORT': '5432',
+        'OPTIONS': {'sslmode': 'require'},
     }
 }
 

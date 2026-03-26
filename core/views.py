@@ -3,10 +3,35 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Profile, Oferta
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+import json
+from .models import Profile, Oferta, ClasificacionCandidato
 from .forms import UserEditForm, ProfileEditForm, EmpresaProfileEditForm, OfertaForm
 
 def index(request):
+    if request.user.is_authenticated and request.user.profile.role == 'empresa':
+        postulantes = Profile.objects.filter(role='postulante').select_related('user')
+        clasificaciones = ClasificacionCandidato.objects.filter(empresa=request.user.profile)
+        clasif_dict = {c.postulante_id: c.estado for c in clasificaciones}
+        
+        columnas = {
+            'pendiente': [],
+            'entrevista_pendiente': [],
+            'entrevistado': [],
+            'cumple': [],
+            'no_cumple': []
+        }
+        
+        for p in postulantes:
+            estado = clasif_dict.get(p.id, 'pendiente')
+            p.estado_actual = estado
+            columnas[estado].append(p)
+            
+        return render(request, 'core/index_empresa.html', {
+            'columnas': columnas
+        })
+
     query = request.GET.get('q', '')
     ubicacion = request.GET.get('u', '')
     
@@ -143,6 +168,36 @@ def eliminar_oferta(request, oferta_id):
         oferta = get_object_or_404(Oferta, id=oferta_id, empresa=request.user.profile)
         oferta.delete()
         messages.success(request, "Vacante eliminada exitosamente.")
-    return redirect('perfil')
+    return redirect('editar_perfil')
+
+@login_required
+@require_POST
+def actualizar_estado_candidato(request):
+    if request.user.profile.role != 'empresa':
+        return JsonResponse({'error': 'No autorizado'}, status=403)
+        
+    try:
+        data = json.loads(request.body)
+        postulante_id = data.get('postulante_id')
+        nuevo_estado = data.get('estado')
+        
+        if not postulante_id or not nuevo_estado:
+            return JsonResponse({'error': 'Faltan datos'}, status=400)
+            
+        postulante = get_object_or_404(Profile, id=postulante_id, role='postulante')
+        
+        clasificacion, created = ClasificacionCandidato.objects.get_or_create(
+            empresa=request.user.profile,
+            postulante=postulante,
+            defaults={'estado': nuevo_estado}
+        )
+        
+        if not created:
+            clasificacion.estado = nuevo_estado
+            clasificacion.save()
+            
+        return JsonResponse({'success': True, 'estado': nuevo_estado})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 
