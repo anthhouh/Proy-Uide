@@ -356,7 +356,7 @@ body {
         <div class="results-header">
             <div class="results-title">
                 <h1>Buscar empleos</h1>
-                <p>Explora 124 vacantes disponibles en Loja, Ecuador</p>
+                <p>Explora {{ total_vacantes }} vacantes disponibles en Loja, Ecuador</p>
             </div>
             <div class="view-toggles">
                 <button class="view-btn active">▦</button>
@@ -365,7 +365,55 @@ body {
         </div>
 
         <div class="jobs-list" id="searchJobsList">
-            <!-- Empleos inyectados dinámicamente -->
+            {% for oferta in ofertas %}
+            <div class="job-card-h">
+                <div class="job-logo">
+                    {% if oferta.empresa.empresa_logo %}
+                        <img src="{{ oferta.empresa.empresa_logo.url }}" alt="Logo" style="width:100%; height:100%; object-fit:cover; border-radius: var(--radius-md);">
+                    {% else %}
+                        <span style="color:#0ea5e9; font-weight:800; font-size:1.5rem;">{{ oferta.empresa.empresa_nombre|make_list|first|default:"E" }}</span>
+                    {% endif %}
+                </div>
+                <div class="job-info-main">
+                    <div class="job-h-title">
+                        <h3>{{ oferta.titulo }}</h3>
+                        <span class="badge badge-green" style="font-size:0.625rem; font-weight:700;">NUEVO</span>
+                    </div>
+                    <div class="job-h-company">
+                        {{ oferta.empresa.empresa_nombre }} <span>• {{ oferta.ubicacion|default:"Locación no especificada" }}</span>
+                    </div>
+                    <div class="job-h-badges">
+                        <span class="job-badge">📂 {{ oferta.get_modalidad_display }}</span>
+                        <span class="job-badge badge-action">⚡ Postulación rápida</span>
+                    </div>
+                    <div class="job-h-candidates">
+                        <span style="font-weight:600; color:var(--primary-color)">{{ oferta.aplicaciones.count }}</span> &nbsp;candidatos ya aplicaron
+                    </div>
+                </div>
+                <div class="job-h-right">
+                    <div>
+                        <div class="job-h-salary">💵 {{ oferta.sueldo|default:"A convenir" }}</div>
+                        <div class="job-h-time">Publicada el {{ oferta.fecha_publicacion|date:"d M" }}</div>
+                    </div>
+                    {% if request.user.is_authenticated and request.user.profile.role == 'postulante' %}
+                        {% if oferta.id in postulaciones_ids %}
+                            <button class="btn btn-outline" style="background:#f1f5f9; color:#10b981; border-color:#10b981; cursor:default; white-space: nowrap;" disabled>✅ Ya Postulaste</button>
+                        {% else %}
+                            <a href="{% url 'aplicar_oferta' oferta.id %}" class="btn btn-primary" style="text-decoration:none; text-align:center; white-space: nowrap;">Postular Ahora</a>
+                        {% endif %}
+                    {% else %}
+                        <button class="btn btn-outline view-job-btn" style="background:#0f172a; color:white; border-color:#0f172a; white-space: nowrap;">Ver detalles</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: white; border-radius: 1rem; border: 1px dashed #cbd5e1;">
+                <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.4;">🔍</div>
+                <h3 style="color: var(--text-main); margin-bottom: 0.5rem; font-size: 1.5rem;">No se encontraron empleos</h3>
+                <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1.5rem;">Intenta con otros términos de búsqueda.</p>
+                <a href="{% url 'buscar_empleos' %}" class="btn btn-primary">Limpiar búsqueda</a>
+            </div>
+            {% endfor %}
         </div>
 
         <div class="pagination">

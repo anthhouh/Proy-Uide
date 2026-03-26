@@ -40,9 +40,9 @@ def index(request):
     
     ofertas = Oferta.objects.filter(estado=True)
     if query:
-        ofertas = ofertas.filter(titulo__icontains=query)
+        ofertas = ofertas.filter(titulo__unaccent__icontains=query)
     if ubicacion:
-        ofertas = ofertas.filter(ubicacion__icontains=ubicacion)
+        ofertas = ofertas.filter(ubicacion__unaccent__icontains=ubicacion)
         
     ofertas = ofertas.order_by('-fecha_publicacion')[:6]
     
@@ -126,7 +126,28 @@ def empleo(request):
     return render(request, 'core/empleo.html')
 
 def buscar_empleos(request):
-    return render(request, 'core/buscar_empleos.html')
+    query = request.GET.get('q', '')
+    ubicacion = request.GET.get('u', '')
+    
+    ofertas = Oferta.objects.filter(estado=True)
+    if query:
+        ofertas = ofertas.filter(titulo__unaccent__icontains=query)
+    if ubicacion:
+        ofertas = ofertas.filter(ubicacion__unaccent__icontains=ubicacion)
+        
+    ofertas = ofertas.order_by('-fecha_publicacion')
+
+    postulaciones_ids = []
+    if request.user.is_authenticated and request.user.profile.role == 'postulante':
+        postulaciones_ids = list(Postulacion.objects.filter(postulante=request.user.profile).values_list('oferta_id', flat=True))
+
+    return render(request, 'core/buscar_empleos.html', {
+        'ofertas': ofertas,
+        'q': query,
+        'u': ubicacion,
+        'postulaciones_ids': postulaciones_ids,
+        'total_vacantes': ofertas.count()
+    })
 
 @login_required
 def perfil(request):

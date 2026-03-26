@@ -231,7 +231,7 @@
         <h1 class="hero-title">Encuentra tu próximo<br><span>empleo en Loja</span></h1>
         <p class="hero-subtitle">Conectamos el talento lojano con las mejores empresas de la ciudad y la provincia. Tu futuro profesional empieza aquí.</p>
         
-        <form class="search-container" method="GET" action="{% url 'index' %}">
+        <form class="search-container" method="GET" action="{% url 'buscar_empleos' %}">
             <div class="search-input-group">
                 <span style="color:#9ca3af;">🔍</span>
                 <input type="text" name="q" placeholder="Cargo o palabra clave" value="{{ q|default:'' }}">
