@@ -1,0 +1,17 @@
+[33m5733e17[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge branch 'main' of https://github.com/Danny-589/Proy-Uide
+[33mafccf94[m feat: Implement initial user authentication, profile management, job search, and company features including candidate management and unaccent search.
+[33ma9487d9[m Merge branch 'main' of https://github.com/Danny-589/Proy-Uide
+[33mc4358b4[m feat: Implement core application features including user authentication, profiles, job offers, and application management with new models, views, URLs, and templates.
+[33m5ac4c58[m feat: Implementar plataforma Bolsa de Empleo Loja con Django y LocalStorage
+[33m3b7bd13[m feat: Introduce user and company profile management system with dedicated views, forms, models, and migrations.
+[33mb98f092[m feat: Implement core user authentication, profile management for job seekers and companies, and job offer creation/management.
+[33m6b41cbb[m feat: Implement user authentication, profile management with role selection, and media handling for CVs and profile pictures.
+[33md88118c[m feat: Implement initial core application structure, pages, local storage database, and base UI for the job board.
+[33m6c7ddbe[m chore: Add initial .gitignore with common exclusions for Python, Django, virtual environments, and IDEs.
+[33m9eb2dd9[m feat: Install Django and other core project dependencies within the virtual environment.
+[33m9c91593[m docs: Update README to specify Django for the backend and localStorage for data persistence, replacing the relational database requirement.
+[33mb1a22b9[m feat: Add initial System Requirements Specification (SRS) for the job board system to README.
+[33me02d542[m a
+[33mbbd8a60[m a
+[33mb755d4f[m c1
+[33m3604dca[m Initial commit
