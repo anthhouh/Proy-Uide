@@ -379,7 +379,7 @@ body { background-color: var(--bg-main); }
                                 {% if p.hoja_de_vida %}
                                 <a href="{{ p.hoja_de_vida.url }}" target="_blank" class="tag-rec" style="background:#e0e7ff; color:#4338ca; text-decoration:none;">📄 Ver CV</a>
                                 {% endif %}
-                                <a href="{% url 'perfil' %}?id={{ p.id }}" target="_blank" class="tag-rec" style="background:#dcfce3; color:#166534; text-decoration:none;">👁 Ver Perfil</a>
+                                <a href="{% url 'perfil' %}?id={{ p.id }}" class="tag-rec" style="background:#dcfce3; color:#166534; text-decoration:none;">👁 Ver Perfil</a>
                             </div>
                         </div>
                     </div>

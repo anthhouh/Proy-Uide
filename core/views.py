@@ -64,14 +64,19 @@ def index(request):
 def registro(request):
     if request.method == 'POST':
         nombre = request.POST.get('name')
+        username = request.POST.get('username', '').strip()
         email = request.POST.get('email')
         password = request.POST.get('password')
         role = request.POST.get('role', 'postulante')
         
-        if User.objects.filter(username=email).exists():
+        if not username:
+            messages.error(request, 'El nombre de usuario es obligatorio.')
+        elif User.objects.filter(username=username).exists():
+            messages.error(request, 'Ese nombre de usuario ya está en uso. Elige otro.')
+        elif User.objects.filter(email=email).exists():
             messages.error(request, 'El correo ya está registrado.')
         else:
-            user = User.objects.create_user(username=email, email=email, password=password)
+            user = User.objects.create_user(username=username, email=email, password=password)
             Profile.objects.create(user=user, role=role, nombre_visualizacion=nombre)
             # Iniciar sesión automáticamente
             auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')

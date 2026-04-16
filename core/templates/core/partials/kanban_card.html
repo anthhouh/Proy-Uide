@@ -21,7 +21,7 @@
 
     <div class="card-actions">
         <!-- Optional: Link to see full profile if implemented -->
-        <a href="{% url 'perfil' %}?id={{ p.id }}" class="btn-small" target="_blank" draggable="false">Ver Perfil</a>
+        <a href="{% url 'perfil' %}?id={{ p.id }}" class="btn-small" draggable="false">Ver Perfil</a>
         {% if p.hoja_de_vida %}
         <a href="{{ p.hoja_de_vida.url }}" class="btn-small" target="_blank" draggable="false" style="color: var(--primary-color); border-color: var(--primary-light);">CV 📄</a>
         {% endif %}
