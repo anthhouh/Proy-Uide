@@ -10,10 +10,12 @@ from .models import Profile, Oferta, ClasificacionCandidato, Postulacion
 from .forms import UserEditForm, ProfileEditForm, EmpresaProfileEditForm, OfertaForm
 
 def index(request):
-    if request.user.is_authenticated and request.user.profile.role == 'empresa':
-        postulantes_ids = Postulacion.objects.filter(oferta__empresa=request.user.profile).values_list('postulante_id', flat=True).distinct()
+    user_profile = getattr(request.user, 'profile', None) if request.user.is_authenticated else None
+
+    if user_profile and user_profile.role == 'empresa':
+        postulantes_ids = Postulacion.objects.filter(oferta__empresa=user_profile).values_list('postulante_id', flat=True).distinct()
         postulantes = Profile.objects.filter(id__in=postulantes_ids).select_related('user')
-        clasificaciones = ClasificacionCandidato.objects.filter(empresa=request.user.profile)
+        clasificaciones = ClasificacionCandidato.objects.filter(empresa=user_profile)
         clasif_dict = {c.postulante_id: c.estado for c in clasificaciones}
         
         columnas = {
@@ -28,7 +30,7 @@ def index(request):
             estado = clasif_dict.get(p.id, 'pendiente')
             p.estado_actual = estado
             columnas[estado].append(p)
-        mis_ofertas = Oferta.objects.filter(empresa=request.user.profile).order_by('-fecha_publicacion')
+        mis_ofertas = Oferta.objects.filter(empresa=user_profile).order_by('-fecha_publicacion')
             
         return render(request, 'core/index_empresa.html', {
             'columnas': columnas,
@@ -49,8 +51,8 @@ def index(request):
     # Extraer postulaciones del usuario si es postulante
     mis_postulaciones = []
     postulaciones_ids = []
-    if request.user.is_authenticated and request.user.profile.role == 'postulante':
-        mis_postulaciones = Postulacion.objects.filter(postulante=request.user.profile).select_related('oferta', 'oferta__empresa').order_by('-fecha_postulacion')
+    if user_profile and user_profile.role == 'postulante':
+        mis_postulaciones = Postulacion.objects.filter(postulante=user_profile).select_related('oferta', 'oferta__empresa').order_by('-fecha_postulacion')
         postulaciones_ids = list(mis_postulaciones.values_list('oferta_id', flat=True))
 
     return render(request, 'core/index.html', {
@@ -88,12 +90,19 @@ def user_login(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
-        user = authenticate(request, username=email, password=password)
+
+        # Buscar el usuario por email para obtener su username real
+        try:
+            user_obj = User.objects.get(email=email)
+            user = authenticate(request, username=user_obj.username, password=password)
+        except User.DoesNotExist:
+            user = None
+
         if user is not None:
             auth_login(request, user)
             return redirect('dashboard')
         else:
-            messages.error(request, 'Credenciales incorrectas')
+            messages.error(request, 'Correo o contraseña incorrectos.')
             
     return render(request, 'core/login.html')
 
@@ -142,8 +151,9 @@ def buscar_empleos(request):
     ofertas = ofertas.order_by('-fecha_publicacion')
 
     postulaciones_ids = []
-    if request.user.is_authenticated and request.user.profile.role == 'postulante':
-        postulaciones_ids = list(Postulacion.objects.filter(postulante=request.user.profile).values_list('oferta_id', flat=True))
+    user_profile = getattr(request.user, 'profile', None) if request.user.is_authenticated else None
+    if user_profile and user_profile.role == 'postulante':
+        postulaciones_ids = list(Postulacion.objects.filter(postulante=user_profile).values_list('oferta_id', flat=True))
 
     return render(request, 'core/buscar_empleos.html', {
         'ofertas': ofertas,
