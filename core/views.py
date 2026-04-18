@@ -249,6 +249,93 @@ def ajax_verificar_codigo(request):
     auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
     return JsonResponse({'ok': True, 'redirect': '/dashboard/'})
 
+@require_POST
+def ajax_solicitar_reset(request):
+    """Paso 1: Valida correo, genera código en sesión, envía email."""
+    email = request.POST.get('email', '').strip()
+    if not email:
+        return JsonResponse({'ok': False, 'error': 'El correo es obligatorio.'}, status=400)
+    
+    user = User.objects.filter(email=email).first()
+    if not user:
+        # Por seguridad y UX en apps chicas indicamos que no existe.
+        return JsonResponse({'ok': False, 'error': 'No existe una cuenta registrada con este correo.'}, status=404)
+        
+    codigo_generado = str(random.randint(100000, 999999))
+    
+    try:
+        send_mail(
+            'Recuperación de Contraseña - Empleos Loja',
+            f'Hola {user.profile.nombre_visualizacion},\n\nTu código para restablecer tu contraseña es: {codigo_generado}\n\nIngresa este código en la plataforma. El código expira en 15 minutos.\n\nSi no fuiste tú, ignora este correo.\n\nSaludos,\nEl equipo de Empleos Loja',
+            None,
+            [email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': f"Error de correo SMTP: {str(e)[:100]}"})
+        
+    request.session['reset_pendiente'] = {
+        'email': email,
+        'codigo': codigo_generado,
+        'timestamp': timezone.now().timestamp(),
+        'verificado': False
+    }
+    
+    # Siempre imprimimos en consola para facilitar pruebas locales
+    print(f"\n======== RECUPERACIÓN =========")
+    print(f"CÓDIGO PARA {email}: {codigo_generado}")
+    print(f"===============================\n")
+    
+    return JsonResponse({'ok': True, 'email': email})
+
+@require_POST
+def ajax_verificar_reset(request):
+    """Paso 2: Valida el código de 6 dígitos para la recuperación."""
+    email = request.POST.get('email', '').strip()
+    codigo = request.POST.get('code', '').strip()
+    
+    pendiente = request.session.get('reset_pendiente')
+    if not pendiente or pendiente.get('email') != email:
+        return JsonResponse({'ok': False, 'error': 'Sesión expirada. Por favor, solicita un código nuevo.'}, status=400)
+        
+    tiempo_creado = pendiente.get('timestamp', 0)
+    if timezone.now().timestamp() > tiempo_creado + 900: # 15 min
+        del request.session['reset_pendiente']
+        return JsonResponse({'ok': False, 'error': 'El código ha expirado. Solicita uno nuevo.'}, status=400)
+        
+    if pendiente.get('codigo') != codigo:
+        return JsonResponse({'ok': False, 'error': 'Código incorrecto. Verifica el número e intenta nuevamente.'}, status=400)
+        
+    # Validado exitosamente, autorizamos el cambio
+    request.session['reset_pendiente']['verificado'] = True
+    request.session.modified = True
+    
+    return JsonResponse({'ok': True})
+
+@require_POST
+def ajax_cambiar_password(request):
+    """Paso 3: Realiza el cambio físico de la contraseña despues de verificar."""
+    email = request.POST.get('email', '').strip()
+    password = request.POST.get('password', '')
+    
+    if len(password) < 6:
+        return JsonResponse({'ok': False, 'error': 'La contraseña debe tener al menos 6 caracteres.'}, status=400)
+        
+    pendiente = request.session.get('reset_pendiente')
+    if not pendiente or pendiente.get('email') != email or not pendiente.get('verificado'):
+        return JsonResponse({'ok': False, 'error': 'No estás autorizado para cambiar la contraseña o la sesión expiró.'}, status=403)
+        
+    user = User.objects.filter(email=email).first()
+    if user:
+        user.set_password(password)
+        user.save()
+        
+    # Limpiamos la caché de recuperación
+    if 'reset_pendiente' in request.session:
+        del request.session['reset_pendiente']
+        
+    return JsonResponse({'ok': True})
+
 @login_required
 def dashboard(request):
     context = {}

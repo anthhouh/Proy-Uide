@@ -281,7 +281,10 @@
                 </div>
                 <button type="submit" id="loginSubmitBtn" class="btn btn-primary" style="width:100%; padding:0.875rem; font-size:1rem; font-weight:700; border-radius:0.875rem; transition:all 0.2s;">Iniciar Sesión →</button>
             </form>
-            <p style="margin-top:1.25rem; text-align:center; font-size:0.875rem; color:#64748b;">¿No tienes cuenta? <button onclick="switchTab('registro')" style="background:none; border:none; color:#2563eb; font-weight:700; cursor:pointer; font-size:0.875rem;">Regístrate gratis</button></p>
+            <div style="margin-top:1.25rem; display:flex; justify-content:space-between; align-items:center; font-size:0.875rem;">
+                <button type="button" onclick="switchToReset()" style="background:none; border:none; color:#64748b; cursor:pointer; padding:0;">¿Olvidaste tu contraseña?</button>
+                <div style="color:#64748b;">¿No tienes cuenta? <button type="button" onclick="switchTab('registro')" style="background:none; border:none; color:#2563eb; font-weight:700; cursor:pointer; font-size:0.875rem;">Regístrate</button></div>
+            </div>
         </div>
 
         <!-- ── REGISTRO FORM ── -->
@@ -354,6 +357,64 @@
             </form>
             <p style="margin-top:1.25rem; text-align:center; font-size:0.875rem; color:#64748b;">¿Te equivocaste de correo? <button onclick="switchTab('registro')" style="background:none; border:none; color:#2563eb; font-weight:700; cursor:pointer; font-size:0.875rem;">Volver al registro</button></p>
         </div>
+
+        <!-- ── RECUPERAR CONTRASEÑA: PASO 1 (SOLICITAR) ── -->
+        <div id="formOlvidePassword" style="display:none; padding:1.75rem 2rem 2rem;">
+            <p style="margin:0 0 1.5rem; color:#64748b; font-size:0.9rem;">Ingresa tu correo para recibir un código de recuperación de contraseña.</p>
+            <form id="resetSolicitarForm" onsubmit="submitResetSolicitar(event)">
+                {% csrf_token %}
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem;">Correo electrónico</label>
+                    <input type="email" name="email" id="resetEmail" required placeholder="tu@correo.com"
+                        style="width:100%; padding:0.875rem 1rem; border:1.5px solid #e2e8f0; border-radius:0.75rem; font-size:0.95rem; outline:none; transition:border-color 0.2s; box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'">
+                </div>
+                <button type="submit" id="resetSolicitarBtn" class="btn btn-primary" style="width:100%; padding:0.875rem; font-size:1rem; font-weight:700; border-radius:0.875rem; transition:all 0.2s;">Enviar Código →</button>
+            </form>
+            <p style="margin-top:1.25rem; text-align:center; font-size:0.875rem; color:#64748b;"><button onclick="switchTab('login')" style="background:none; border:none; color:#2563eb; font-weight:700; cursor:pointer; font-size:0.875rem;">Volver al inicio de sesión</button></p>
+        </div>
+
+        <!-- ── RECUPERAR CONTRASEÑA: PASO 2 (VERIFICAR) ── -->
+        <div id="formVerificacionReset" style="display:none; padding:1.75rem 2rem 2rem;">
+            <p style="margin:0 0 1.5rem; color:#64748b; font-size:0.9rem;">Hemos enviado un código a tu correo. Ingrésalo a continuación (expira en 15 mins).</p>
+            <form id="resetVerificarForm" onsubmit="submitVerificarReset(event)">
+                {% csrf_token %}
+                <input type="hidden" name="email" id="resetVerifyEmail">
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem; text-align:center;">Código de 6 dígitos</label>
+                    <input type="text" name="code" id="resetVerifyCode" required placeholder="123456" maxlength="6"
+                        style="width:100%; padding:1.25rem 1rem; border:2px solid #e2e8f0; border-radius:1rem; font-size:2rem; font-weight:800; text-align:center; letter-spacing:0.4em; outline:none; transition:border-color 0.2s, background-color 0.2s; box-sizing:border-box; background:#f8fafc;"
+                        onfocus="this.style.borderColor='#2563eb'; this.style.backgroundColor='white';" 
+                        onblur="this.style.borderColor='#e2e8f0'">
+                </div>
+                <button type="submit" id="resetVerificarBtn" class="btn btn-primary" style="width:100%; padding:1rem; font-size:1.05rem; font-weight:700; border-radius:1rem; transition:all 0.2s;">Validar Código →</button>
+            </form>
+            <p style="margin-top:1.25rem; text-align:center; font-size:0.875rem; color:#64748b;"><button onclick="switchTab('login')" style="background:none; border:none; color:#2563eb; font-weight:700; cursor:pointer; font-size:0.875rem;">Cancelar y volver al inicio</button></p>
+        </div>
+
+        <!-- ── RECUPERAR CONTRASEÑA: PASO 3 (NUEVA CLAVE) ── -->
+        <div id="formNuevoPassword" style="display:none; padding:1.75rem 2rem 2rem;">
+            <p style="margin:0 0 1.5rem; color:#64748b; font-size:0.9rem;">Código verificado con éxito. Ingresa tu nueva contraseña.</p>
+            <form id="resetCambiarForm" onsubmit="submitCambiarPassword(event)">
+                {% csrf_token %}
+                <input type="hidden" name="email" id="resetCambiarEmail">
+                <div style="margin-bottom:1.5rem; position:relative;">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem;">Nueva Contraseña</label>
+                    <input type="password" name="password" id="resetNewPassword" required placeholder="Mínimo 6 caracteres"
+                        style="width:100%; padding:0.875rem 1rem; padding-right:3rem; border:1.5px solid #e2e8f0; border-radius:0.75rem; font-size:0.95rem; outline:none; transition:border-color 0.2s; box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'">
+                    <button type="button" onclick="togglePwd('resetNewPassword',this)" style="position:absolute; right:0.875rem; bottom:0.875rem; background:none; border:none; cursor:pointer; font-size:1.1rem; color:#94a3b8;">👁</button>
+                </div>
+                <div style="margin-bottom:1.5rem; position:relative;">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem;">Confirmar Contraseña</label>
+                    <input type="password" id="resetConfirmPassword" required placeholder="Mínimo 6 caracteres"
+                        style="width:100%; padding:0.875rem 1rem; padding-right:3rem; border:1.5px solid #e2e8f0; border-radius:0.75rem; font-size:0.95rem; outline:none; transition:border-color 0.2s; box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'">
+                    <button type="button" onclick="togglePwd('resetConfirmPassword',this)" style="position:absolute; right:0.875rem; bottom:0.875rem; background:none; border:none; cursor:pointer; font-size:1.1rem; color:#94a3b8;">👁</button>
+                </div>
+                <button type="submit" id="resetCambiarBtn" class="btn btn-primary" style="width:100%; padding:0.875rem; font-size:1rem; font-weight:700; border-radius:0.875rem; transition:all 0.2s;">Guardar Nueva Contraseña ✓</button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -418,16 +479,21 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAuthMod
 
 function switchTab(tab) {
     const isLogin = tab === 'login';
+    
+    // Ocultar tabs de recuperación
+    const otrosTabs = ['formVerificacion', 'formOlvidePassword', 'formVerificacionReset', 'formNuevoPassword'];
+    otrosTabs.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.style.display = 'none';
+    });
+    
     document.getElementById('formLogin').style.display    = isLogin ? 'block' : 'none';
     document.getElementById('formRegistro').style.display = isLogin ? 'none'  : 'block';
     
-    // Hide verification step if tab switched
-    const verifForm = document.getElementById('formVerificacion');
-    if (verifForm) verifForm.style.display = 'none';
     const tabsWrapper = document.getElementById('authTabsWrapper');
     if (tabsWrapper) tabsWrapper.style.display = 'flex';
     
-    // Tab buttons style
+    // Estilos botones tabs principales
     const loginBtn = document.getElementById('tabLoginBtn');
     const regBtn   = document.getElementById('tabRegBtn');
     loginBtn.style.borderBottomColor = isLogin ? '#2563eb' : 'transparent';
@@ -435,6 +501,17 @@ function switchTab(tab) {
     regBtn.style.borderBottomColor   = isLogin ? 'transparent' : '#2563eb';
     regBtn.style.color               = isLogin ? '#94a3b8' : '#2563eb';
     document.getElementById('authError').style.display = 'none';
+}
+
+function switchToReset() {
+    ['formLogin', 'formRegistro', 'formVerificacion', 'formVerificacionReset', 'formNuevoPassword'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.style.display = 'none';
+    });
+    document.getElementById('authTabsWrapper').style.display = 'none';
+    document.getElementById('authError').style.display = 'none';
+    document.getElementById('formOlvidePassword').style.display = 'block';
+    setTimeout(() => document.getElementById('resetEmail').focus(), 100);
 }
 
 function togglePwd(fieldId, btn) {
@@ -523,6 +600,109 @@ async function submitRegistro(e) {
     } catch(err) {
         showAuthError('Error de conexión. Intenta nuevamente.');
         btn.disabled = false; btn.textContent = 'Crear Cuenta →';
+    }
+}
+
+// ── LÓGICA DE RECUPERACIÓN DE CONTRASEÑA ──
+async function submitResetSolicitar(e) {
+    e.preventDefault();
+    const btn = document.getElementById('resetSolicitarBtn');
+    btn.disabled = true; btn.textContent = 'Enviando...';
+    const form = document.getElementById('resetSolicitarForm');
+    const data = new FormData(form);
+    const email = document.getElementById('resetEmail').value;
+    try {
+        const res = await fetch('/ajax/reset/solicitar/', { method:'POST', body: data });
+        const json = await res.json();
+        if (json.ok) {
+            btn.disabled = false; btn.textContent = 'Enviar Código →';
+            document.getElementById('formOlvidePassword').style.display = 'none';
+            document.getElementById('resetVerifyEmail').value = json.email;
+            document.getElementById('authError').style.display = 'none';
+            document.getElementById('formVerificacionReset').style.display = 'block';
+            setTimeout(() => document.getElementById('resetVerifyCode').focus(), 100);
+        } else {
+            showAuthError(json.error);
+            btn.disabled = false; btn.textContent = 'Enviar Código →';
+        }
+    } catch(err) {
+        showAuthError('Error de conexión.');
+        btn.disabled = false; btn.textContent = 'Enviar Código →';
+    }
+}
+
+async function submitVerificarReset(e) {
+    e.preventDefault();
+    const btn = document.getElementById('resetVerificarBtn');
+    btn.disabled = true; btn.textContent = 'Validando...';
+    const form = document.getElementById('resetVerificarForm');
+    const data = new FormData(form);
+    try {
+        const res = await fetch('/ajax/reset/verificar/', { method:'POST', body: data });
+        const json = await res.json();
+        if (json.ok) {
+            btn.disabled = false; btn.textContent = 'Validar Código →';
+            document.getElementById('formVerificacionReset').style.display = 'none';
+            document.getElementById('resetCambiarEmail').value = document.getElementById('resetVerifyEmail').value;
+            document.getElementById('authError').style.display = 'none';
+            document.getElementById('formNuevoPassword').style.display = 'block';
+            setTimeout(() => document.getElementById('resetNewPassword').focus(), 100);
+        } else {
+            showAuthError(json.error);
+            btn.disabled = false; btn.textContent = 'Validar Código →';
+        }
+    } catch(err) {
+        showAuthError('Error de conexión.');
+        btn.disabled = false; btn.textContent = 'Validar Código →';
+    }
+}
+
+async function submitCambiarPassword(e) {
+    e.preventDefault();
+    const btn = document.getElementById('resetCambiarBtn');
+    
+    const pwd = document.getElementById('resetNewPassword').value;
+    const confirmPwd = document.getElementById('resetConfirmPassword').value;
+    if (pwd.length < 6) { showAuthError('La contraseña debe tener al menos 6 caracteres.'); return; }
+    if (pwd !== confirmPwd) { showAuthError('Las contraseñas no coinciden. Revisa e intenta de nuevo.'); return; }
+    
+    btn.disabled = true; btn.textContent = 'Guardando...';
+    const form = document.getElementById('resetCambiarForm');
+    const data = new FormData(form);
+    try {
+        const res = await fetch('/ajax/reset/cambiar/', { method:'POST', body: data });
+        const json = await res.json();
+        if (json.ok) {
+            btn.disabled = false; btn.textContent = 'Guardar Nueva Contraseña ✓';
+            
+            // Volveremos al panel de login
+            const loginEmailField = document.getElementById('loginEmail');
+            loginEmailField.value = document.getElementById('resetCambiarEmail').value;
+            
+            // Simulamos limpiar pero mostramos el box de error de manera positiva (verde) temporalmente
+            switchTab('login');
+            const errBox = document.getElementById('authError');
+            errBox.style.display = 'block';
+            errBox.style.backgroundColor = '#dcfce7'; // green-100
+            errBox.style.borderColor = '#86efac'; // green-300
+            errBox.style.color = '#166534'; // green-800
+            errBox.textContent = 'Contraseña cambiada exitosamente. Por favor, inicia sesión con tu nueva clave.';
+            
+            // Reset state style for future errors
+            setTimeout(() => {
+                errBox.style.backgroundColor = '#fff1f1';
+                errBox.style.borderColor = '#fca5a5';
+                errBox.style.color = '#9b1c1c';
+            }, 6000);
+            
+            document.getElementById('loginPassword').focus();
+        } else {
+            showAuthError(json.error);
+            btn.disabled = false; btn.textContent = 'Guardar Nueva Contraseña ✓';
+        }
+    } catch(err) {
+        showAuthError('Error de conexión.');
+        btn.disabled = false; btn.textContent = 'Guardar Nueva Contraseña ✓';
     }
 }
 
