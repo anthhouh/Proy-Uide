@@ -404,6 +404,23 @@
             </div>
         </div>
 
+        <!-- ── LOGIN 2FA FORM ── -->
+        <div id="formLogin2FA" style="display:none; padding:1.75rem 2rem 2rem;">
+            <p style="margin:0 0 1.5rem; color:#64748b; font-size:0.9rem;">Verificación en dos pasos. Ingrese el código enviado a su correo.</p>
+            <form id="login2FAForm" onsubmit="submitLogin2FA(event)">
+                {% csrf_token %}
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem; text-align:center;">Código de 6 dígitos</label>
+                    <input type="text" name="code" id="login2FACode" required placeholder="123456" maxlength="6"
+                        style="width:100%; padding:1.25rem 1rem; border:2px solid var(--border-color); border-radius:1rem; font-size:2rem; font-weight:800; text-align:center; letter-spacing:0.4em; outline:none; transition:border-color 0.2s, background-color 0.2s; box-sizing:border-box; background:var(--bg-main); color:var(--text-main);"
+                        onfocus="this.style.borderColor='#2563eb'; this.style.backgroundColor='white';" 
+                        onblur="this.style.borderColor='#e2e8f0'">
+                </div>
+                <button type="submit" id="login2FASubmitBtn" class="btn btn-primary" style="width:100%; padding:1rem; font-size:1.05rem; font-weight:700; border-radius:1rem; transition:all 0.2s;">Ingresar →</button>
+            </form>
+            <p style="margin-top:1.25rem; text-align:center; font-size:0.875rem; color:#64748b;"><button type="button" onclick="switchTab('login')" style="background:none; border:none; color:#2563eb; font-weight:700; cursor:pointer; font-size:0.875rem;">Volver al inicio de sesión</button></p>
+        </div>
+
         <!-- ── REGISTRO FORM ── -->
         <div id="formRegistro" style="display:none; padding:1.75rem 2rem 2rem; max-height:80vh; overflow-y:auto;">
             <p style="margin:0 0 1.5rem; color:#64748b; font-size:0.9rem;">Crea tu cuenta y conecta con oportunidades en Loja.</p>
@@ -650,8 +667,8 @@ document.addEventListener('keydown', e => {
 function switchTab(tab) {
     const isLogin = tab === 'login';
     
-    // Ocultar tabs de recuperación
-    const otrosTabs = ['formVerificacion', 'formOlvidePassword', 'formVerificacionReset', 'formNuevoPassword'];
+    // Ocultar tabs de recuperación y 2FA
+    const otrosTabs = ['formVerificacion', 'formOlvidePassword', 'formVerificacionReset', 'formNuevoPassword', 'formLogin2FA'];
     otrosTabs.forEach(id => {
         const el = document.getElementById(id);
         if(el) el.style.display = 'none';
@@ -725,8 +742,18 @@ async function submitLogin(e) {
         const res = await fetch('/ajax/login/', { method:'POST', body: data });
         const json = await res.json();
         if (json.ok) {
-            btn.textContent = '✅ Accediendo...';
-            window.location.href = json.redirect;
+            if (json.requires_2fa) {
+                // Switch to 2FA Form
+                document.getElementById('formLogin').style.display = 'none';
+                document.getElementById('authTabsWrapper').style.display = 'none';
+                document.getElementById('formLogin2FA').style.display = 'block';
+                document.getElementById('authError').style.display = 'none';
+                setTimeout(() => document.getElementById('login2FACode').focus(), 100);
+                btn.disabled = false; btn.textContent = 'Iniciar Sesión →'; // Reset btn
+            } else {
+                btn.textContent = '✅ Accediendo...';
+                window.location.href = json.redirect;
+            }
         } else {
             showAuthError(json.error);
             btn.disabled = false; btn.textContent = 'Iniciar Sesión →';
@@ -734,6 +761,28 @@ async function submitLogin(e) {
     } catch(err) {
         showAuthError('Error de conexión. Intenta nuevamente.');
         btn.disabled = false; btn.textContent = 'Iniciar Sesión →';
+    }
+}
+
+async function submitLogin2FA(e) {
+    e.preventDefault();
+    const btn = document.getElementById('login2FASubmitBtn');
+    btn.disabled = true; btn.textContent = 'Verificando...';
+    const form = document.getElementById('login2FAForm');
+    const data = new FormData(form);
+    try {
+        const res = await fetch('/ajax/verificar-2fa/', { method:'POST', body: data });
+        const json = await res.json();
+        if (json.ok) {
+            btn.textContent = '✅ Completado...';
+            window.location.href = json.redirect;
+        } else {
+            showAuthError(json.error);
+            btn.disabled = false; btn.textContent = 'Ingresar →';
+        }
+    } catch(err) {
+        showAuthError('Error de conexión.');
+        btn.disabled = false; btn.textContent = 'Ingresar →';
     }
 }
 

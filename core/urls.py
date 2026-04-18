@@ -24,6 +24,7 @@ urlpatterns = [
     path('ajax/login/', views.ajax_login, name='ajax_login'),
     path('ajax/registro/', views.ajax_registro, name='ajax_registro'),
     path('ajax/verificar/', views.ajax_verificar_codigo, name='ajax_verificar'),
+    path('ajax/verificar-2fa/', views.ajax_verificar_login_2fa, name='ajax_verificar_login_2fa'),
     path('ajax/reset/solicitar/', views.ajax_solicitar_reset, name='ajax_solicitar_reset'),
     path('ajax/reset/verificar/', views.ajax_verificar_reset, name='ajax_verificar_reset'),
     path('ajax/reset/cambiar/', views.ajax_cambiar_password, name='ajax_cambiar_password'),

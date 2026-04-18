@@ -258,8 +258,7 @@
 <section class="job-section container">
     <div class="job-section-header">
         <div>
-            <h2 class="job-section-title">Ofertas recientes</h2>
-            <p style="color:var(--text-muted); margin-top:0.5rem;">Explora las últimas oportunidades publicadas en las últimas 24 horas.</p>
+            <h2 class="job-section-title">Ofertas disponibles</h2>
         </div>
         <a href="{% url 'buscar_empleos' %}" class="text-primary font-semibold" style="display:flex; align-items:center; gap:0.25rem;">Ver todas las ofertas <span>→</span></a>
     </div>
@@ -302,6 +301,7 @@
     </div>
 </section>
 
+{% if not request.user.is_authenticated or request.user.profile.role != 'postulante' %}
 <section class="cta-section">
     <div class="cta-content">
         <h2 class="cta-title">¿Buscas el mejor talento para tu empresa?</h2>
@@ -314,6 +314,7 @@
         </div>
     </div>
 </section>
+{% endif %}
 
 
 

@@ -14,6 +14,7 @@ class Profile(models.Model):
     cargo_titulo = models.CharField(max_length=255, blank=True)
     telefono = models.CharField(max_length=20, blank=True)
     hoja_de_vida = models.FileField(upload_to='cvs/', null=True, blank=True)
+    requiere_2fa = models.BooleanField(default=False, verbose_name="Verificación en dos pasos")
     
     # --- Nuevos campos para Empresa ---
     empresa_nombre = models.CharField(max_length=255, blank=True)

@@ -149,9 +149,61 @@ def ajax_login(request):
     user = authenticate(request, username=user_obj.username, password=password) if user_obj else None
 
     if user is not None:
+        if getattr(user, 'profile', None) and user.profile.requiere_2fa:
+            codigo_generado = str(random.randint(100000, 999999))
+            try:
+                send_mail(
+                    'Código de Seguridad para Iniciar Sesión',
+                    f'Hola {user.username},\n\nTu código de verificación de dos pasos es: {codigo_generado}\n\nIngresa este código para acceder a tu cuenta. El código expira en 5 minutos.\n\nSaludos,\nEl equipo',
+                    None,
+                    [user.email],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                return JsonResponse({'ok': False, 'error': f"Error de correo: {str(e)[:100]}"})
+                
+            request.session['login_2fa'] = {
+                'user_id': user.id,
+                'codigo': codigo_generado,
+                'timestamp': timezone.now().timestamp(),
+                'next_url': next_url
+            }
+            # Siempre imprimimos en consola para facilitar pruebas locales
+            print(f"\n=========================================")
+            print(f"CÓDIGO 2FA LOGIN PARA {user.email}: {codigo_generado}")
+            print(f"=========================================\n")
+            
+            return JsonResponse({'ok': True, 'requires_2fa': True, 'email': user.email})
+
         auth_login(request, user)
         return JsonResponse({'ok': True, 'redirect': next_url or '/'})
     return JsonResponse({'ok': False, 'error': 'Correo o contraseña incorrectos.'}, status=400)
+
+@require_POST
+def ajax_verificar_login_2fa(request):
+    """AJAX endpoint to verify 2FA code during login."""
+    codigo = request.POST.get('code', '').strip()
+    
+    pendiente = request.session.get('login_2fa')
+    if not pendiente:
+        return JsonResponse({'ok': False, 'error': 'No hay un inicio de sesión pendiente o expiró.'}, status=400)
+        
+    tiempo_creado = pendiente.get('timestamp', 0)
+    if timezone.now().timestamp() > tiempo_creado + 300: # 5 minutos
+        del request.session['login_2fa']
+        return JsonResponse({'ok': False, 'error': 'El código ha expirado. Estaba configurado para durar 5 minutos.'}, status=400)
+        
+    if pendiente.get('codigo') != codigo:
+        return JsonResponse({'ok': False, 'error': 'Código incorrecto. Verifica e intenta de nuevo.'}, status=400)
+        
+    # Login successful
+    user = User.objects.filter(id=pendiente['user_id']).first()
+    if user:
+        auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        next_url = pendiente.get('next_url', '')
+        del request.session['login_2fa']
+        return JsonResponse({'ok': True, 'redirect': next_url or '/'})
+    return JsonResponse({'ok': False, 'error': 'El usuario ya no existe.'}, status=400)
 
 @require_POST
 def ajax_registro(request):
@@ -580,6 +632,21 @@ def configuracion_privacidad(request):
                 update_session_auth_hash(request, user)
                 messages.success(request, 'Contraseña actualizada exitosamente.')
                 return redirect('configuracion')
+        elif 'security_update' in request.POST:
+            pwd_confirm = request.POST.get('password_confirm', '')
+            if not request.user.check_password(pwd_confirm):
+                messages.error(request, 'Contraseña incorrecta. No se guardaron los cambios de seguridad.')
+                return redirect('configuracion')
+                
+            requiere_2fa_val = request.POST.get('requiere_2fa') == '1'
+            if request.user.profile.requiere_2fa != requiere_2fa_val:
+                request.user.profile.requiere_2fa = requiere_2fa_val
+                request.user.profile.save()
+                if requiere_2fa_val:
+                    messages.success(request, 'Verificación en dos pasos activada. Asegúrate de recordar tu contraseña.')
+                else:
+                    messages.success(request, 'Verificación en dos pasos desactivada.')
+            return redirect('configuracion')
     else:
         user_form = UserEditForm(instance=request.user)
         password_form = PasswordChangeForm(request.user)

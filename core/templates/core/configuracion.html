@@ -208,5 +208,99 @@
         </form>
     </div>
 
+    <!-- ── FORMULARIO: 2FA ── -->
+    <div class="cfg-card">
+        <h2 class="cfg-card-title"><span>🛡️</span> Verificación en Dos Pasos (2FA)</h2>
+        <p style="color: var(--text-gray); font-size: 0.95rem; margin-bottom: 1.5rem;">
+            Añade una capa extra de seguridad. Si habilitas esta opción, se te enviará un código de 6 dígitos a tu correo cada vez que intentes iniciar sesión.
+        </p>
+        <form method="POST" id="form-2fa" style="margin-top: 1rem;">
+            {% csrf_token %}
+            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 1rem; font-weight: 600; color: var(--text-dark);">
+                <input type="checkbox" name="requiere_2fa" value="1" id="toggle-2fa-checkbox" {% if request.user.profile.requiere_2fa %}checked{% endif %} style="width: 20px; height: 20px; accent-color: var(--primary-blue);">
+                Habilitar verificación por correo (2FA)
+            </label>
+            <input type="hidden" name="password_confirm" id="hidden_password_confirm">
+            <input type="hidden" name="security_update" value="1">
+        </form>
+    </div>
+
 </div>
+
+<!-- ── MODAL FLOTANTE 2FA ── -->
+<div id="modal-2fa" style="display:none; position:fixed; inset:0; z-index:10000; align-items:center; justify-content:center;">
+    <div id="modal-2fa-backdrop" onclick="close2faModal()" style="position:absolute; inset:0; background:rgba(15, 23, 42, 0.4); backdrop-filter:blur(3px);"></div>
+    <div id="modal-2fa-panel" style="position:relative; width:90%; max-width:420px; background:var(--bg-card); border-radius:1.5rem; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); transform: translateZ(0);">
+        <div style="padding:2rem;">
+            <div style="text-align:center; font-size:3rem; margin-bottom:1rem;">🔐</div>
+            <h3 style="margin:0 0 0.5rem; font-size:1.25rem; font-weight:800; color:var(--text-dark); text-align:center;">Verificación de Seguridad</h3>
+            <p style="margin:0 0 1.5rem; color:var(--text-gray); font-size:0.9rem; text-align:center;">Por razones de seguridad, ingresa tu contraseña actual para confirmar la modificación del estado del 2FA.</p>
+            <div style="margin-bottom:1.5rem; position:relative;">
+                <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dark); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem;">Contraseña</label>
+                <input type="password" id="modal2faPassword" required placeholder="••••••••" style="width:100%; padding:0.875rem 1rem; border:1.5px solid var(--border-light); border-radius:0.75rem; font-size:0.95rem; outline:none; transition:border-color 0.2s; box-sizing:border-box; background:var(--bg-input); color:var(--text-dark);" onfocus="this.style.borderColor='var(--primary-blue)'" onblur="this.style.borderColor='var(--border-light)'" onkeydown="if(event.key === 'Enter') submit2faModal()">
+            </div>
+            <div style="display:flex; gap:1rem;">
+                <button type="button" onclick="close2faModal()" style="flex:1; padding:0.875rem; font-size:1rem; font-weight:700; border-radius:0.75rem; background:transparent; border:2px solid var(--border-light); color:var(--text-gray); cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'">Cancelar</button>
+                <button type="button" onclick="submit2faModal()" style="flex:1; padding:0.875rem; font-size:1rem; font-weight:700; border-radius:0.75rem; background:var(--primary-blue); color:white; border:none; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='var(--primary-blue)'">Confirmar ✓</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Animaciones de entrada */
+#modal-2fa-backdrop { animation: backdropIn 0.28s ease both; }
+#modal-2fa-panel { animation: authFadeIn 0.44s cubic-bezier(0.16, 1, 0.3, 1) both; will-change: transform, opacity; }
+
+/* Animaciones de salida para el modal 2FA (reutilizando keyframes de base.html) */
+.modal-closing #modal-2fa-backdrop { animation: backdropOut 0.28s ease forwards !important; }
+.modal-closing #modal-2fa-panel    { animation: authFadeOut 0.28s ease-in-out forwards !important; }
+</style>
+
+<script>
+    const checkbox2fa = document.getElementById('toggle-2fa-checkbox');
+    checkbox2fa.addEventListener('click', function(e) {
+        e.preventDefault(); 
+        const modal = document.getElementById('modal-2fa');
+        // Quitar la clase por si acaso de un cierre anterior
+        modal.classList.remove('modal-closing');
+        
+        // Reforzar reflow para reiniciar la animación de entrada
+        const panel = document.getElementById('modal-2fa-panel');
+        const backdrop = document.getElementById('modal-2fa-backdrop');
+        panel.style.animation = 'none'; backdrop.style.animation = 'none';
+        
+        modal.style.display = 'flex'; // Necesario estar visible ANTES de forzar reflow
+        void panel.offsetWidth;
+        
+        panel.style.animation = ''; backdrop.style.animation = '';
+        document.getElementById('modal2faPassword').value = '';
+        setTimeout(() => document.getElementById('modal2faPassword').focus(), 100);
+    });
+
+    function close2faModal() {
+        const modal = document.getElementById('modal-2fa');
+        modal.classList.add('modal-closing');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.classList.remove('modal-closing');
+            document.getElementById('modal2faPassword').value = '';
+        }, 280);
+    }
+
+    function submit2faModal() {
+        const pwd = document.getElementById('modal2faPassword').value;
+        if (!pwd) {
+            alert('Debes ingresar tu contraseña para continuar.');
+            return;
+        }
+        document.getElementById('hidden_password_confirm').value = pwd;
+        
+        const isChecked = checkbox2fa.checked;
+        checkbox2fa.checked = !isChecked; 
+        
+        document.getElementById('form-2fa').submit();
+    }
+</script>
+
 {% endblock %}
