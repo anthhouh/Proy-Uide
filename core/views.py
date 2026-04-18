@@ -80,7 +80,7 @@ def index(request):
 
 def registro(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('index')
     if request.method == 'POST':
         nombre   = request.POST.get('name')
         username = request.POST.get('username', '').strip()
@@ -98,14 +98,14 @@ def registro(request):
             user = User.objects.create_user(username=username, email=email, password=password)
             Profile.objects.create(user=user, role=role, nombre_visualizacion=nombre)
             auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect('dashboard')
+            return redirect('index')
     # Redirect to homepage with modal auto-open
     return redirect('/?auth=registro')
 
 def user_login(request):
     # Si ya está autenticado, ir directo al dashboard
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('index')
 
     next_url = request.GET.get('next', '')
 
@@ -127,7 +127,7 @@ def user_login(request):
 
         if user is not None:
             auth_login(request, user)
-            return redirect(next_url) if next_url else redirect('dashboard')
+            return redirect(next_url) if next_url else redirect('index')
         else:
             messages.error(request, 'Correo o contraseña incorrectos.')
 
@@ -150,7 +150,7 @@ def ajax_login(request):
 
     if user is not None:
         auth_login(request, user)
-        return JsonResponse({'ok': True, 'redirect': next_url or '/dashboard/'})
+        return JsonResponse({'ok': True, 'redirect': next_url or '/'})
     return JsonResponse({'ok': False, 'error': 'Correo o contraseña incorrectos.'}, status=400)
 
 @require_POST
@@ -209,7 +209,7 @@ def ajax_registro(request):
         user = User.objects.create_user(username=username, email=email, password=password)
         Profile.objects.create(user=user, role=role, nombre_visualizacion=nombre)
         auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-        return JsonResponse({'ok': True, 'redirect': '/dashboard/'})
+        return JsonResponse({'ok': True, 'redirect': '/'})
 
 @require_POST
 def ajax_verificar_codigo(request):
@@ -247,7 +247,7 @@ def ajax_verificar_codigo(request):
     # Limpiar sesión temporal y loguear
     del request.session['registro_pendiente']
     auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-    return JsonResponse({'ok': True, 'redirect': '/dashboard/'})
+    return JsonResponse({'ok': True, 'redirect': '/'})
 
 @require_POST
 def ajax_solicitar_reset(request):

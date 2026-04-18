@@ -58,15 +58,16 @@
                         {% endif %}
                         <span>{{ user.profile.nombre_visualizacion|default:user.username }}</span>
                     </a>
-                    <button onclick="openSideMenu()" style="background:none; border:none; cursor:pointer; padding:0.5rem; margin-left:0.5rem; color:var(--text-main); display:flex; align-items:center; justify-content:center; border-radius:0.5rem; transition:background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='none'">
-                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 28px; height: 28px;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
                     {% else %}
                     <button onclick="openAuthModal('login')" style="font-weight:500; background:none; border:none; cursor:pointer; font-size:1rem; color:var(--text-main); padding:0;">Iniciar sesión</button>
                     <button onclick="openAuthModal('registro')" class="btn btn-primary" style="padding:0.5rem 1.2rem;">Registro</button>
                     {% endif %}
+                    <!-- Siempre visible: botón menú lateral -->
+                    <button onclick="openSideMenu()" style="background:none; border:none; cursor:pointer; padding:0.5rem; margin-left:0.5rem; color:var(--text-main); display:flex; align-items:center; justify-content:center; border-radius:0.5rem; transition:background 0.2s;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width: 28px; height: 28px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -296,9 +297,15 @@
                 <button onclick="closeSideMenu()" style="background:var(--bg-main); border:none; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; color:var(--text-muted); transition:background 0.2s;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-main)'">✕</button>
             </div>
             
+            {% if user.is_authenticated %}
             <a href="{% url 'configuracion' %}" style="display:flex; justify-content:flex-start; align-items:center; gap:1rem; width:100%; padding:1rem; border:none; background:none; cursor:pointer; border-radius:0.75rem; transition:background 0.2s; color:var(--text-main); font-size:1rem; font-weight:600; margin-bottom:0.5rem; text-decoration:none;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'">
                 <span style="font-size:1.3rem;">⚙️</span> Configuración y privacidad
             </a>
+            {% else %}
+            <button onclick="closeSideMenu(); openAuthModal('login');" style="display:flex; justify-content:flex-start; align-items:center; gap:1rem; width:100%; padding:1rem; border:none; background:none; cursor:pointer; border-radius:0.75rem; transition:background 0.2s; color:var(--text-main); font-size:1rem; font-weight:600; margin-bottom:0.5rem; text-align:left;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'">
+                <span style="font-size:1.3rem;">⚙️</span> Configuración y privacidad
+            </button>
+            {% endif %}
             
             <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:1rem; border-radius:0.75rem; transition:background 0.2s; color:var(--text-main); font-size:1rem; font-weight:600; margin-bottom:auto;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'">
                 <div style="display:flex; align-items:center; gap:1rem;">
@@ -311,9 +318,16 @@
                 </label>
             </div>
             
+            {% if user.is_authenticated %}
             <button onclick="openLogoutModal()" style="display:flex; justify-content:center; align-items:center; gap:0.5rem; width:100%; padding:1rem; border:1px solid #fee2e2; background:#fef2f2; cursor:pointer; border-radius:0.75rem; transition:background 0.2s; color:#ef4444; font-size:1rem; font-weight:700; margin-top:2rem;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
                 <span style="font-size:1.2rem;">🚪</span> Cerrar sesión
             </button>
+            {% else %}
+            <div style="margin-top:2rem; display:flex; flex-direction:column; gap:0.75rem;">
+                <button onclick="closeSideMenu(); openAuthModal('registro');" class="btn btn-primary" style="width:100%; padding:0.875rem; font-size:1rem; font-weight:700; border-radius:0.75rem;">Crear cuenta →</button>
+                <button onclick="closeSideMenu(); openAuthModal('login');" style="width:100%; padding:0.875rem; background:var(--bg-main); color:var(--text-muted); font-size:1rem; font-weight:700; border:1px solid var(--border-color); border-radius:0.75rem; cursor:pointer;">Iniciar sesión</button>
+            </div>
+            {% endif %}
         </aside>
     </div>
 
