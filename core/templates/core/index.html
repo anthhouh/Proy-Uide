@@ -36,7 +36,7 @@
 
 /* Search Bar Component */
 .search-container {
-    max-width: 800px;
+    max-width: 560px;
     margin: 0 auto;
     background: white;
     padding: 0.5rem;
@@ -52,12 +52,6 @@
     align-items: center;
     padding: 0.5rem 1rem;
     gap: 0.5rem;
-}
-.search-divider {
-    width: 1px;
-    height: 24px;
-    background-color: var(--border-color);
-    margin: 0 0.5rem;
 }
 .search-container input {
     border: none;
@@ -213,11 +207,6 @@
                 <span style="color:#9ca3af;">🔍</span>
                 <input type="text" name="q" placeholder="Cargo o palabra clave" value="{{ q|default:'' }}">
             </div>
-            <div class="search-divider"></div>
-            <div class="search-input-group">
-                <span style="color:#9ca3af;">📍</span>
-                <input type="text" name="u" placeholder="Ubicación (Ej: Loja Centro)" value="{{ u|default:'' }}">
-            </div>
             <button type="submit" class="btn btn-primary search-btn">Buscar</button>
         </form>
         
@@ -271,7 +260,7 @@
             <h2 class="job-section-title">Ofertas recientes</h2>
             <p style="color:var(--text-muted); margin-top:0.5rem;">Explora las últimas oportunidades publicadas en las últimas 24 horas.</p>
         </div>
-        <a href="#" class="text-primary font-semibold" style="display:flex; align-items:center; gap:0.25rem;">Ver todas las ofertas <span>→</span></a>
+        <a href="{% url 'buscar_empleos' %}" class="text-primary font-semibold" style="display:flex; align-items:center; gap:0.25rem;">Ver todas las ofertas <span>→</span></a>
     </div>
     
     <div class="job-grid">
@@ -294,20 +283,13 @@
             <div class="job-details" style="flex-wrap: wrap;">
                 <span>📍 {{ oferta.ubicacion|default:"No especificada" }}</span>
                 <span>💼 {{ oferta.get_modalidad_display }}</span>
+                <span style="background:#f3e8ff; color:#7c3aed; padding:0.2rem 0.6rem; border-radius:999px; font-size:0.75rem; font-weight:600;">🏷️ {{ oferta.get_etiqueta_display }}</span>
                 {% if oferta.sueldo %}
                     <span style="color: var(--primary-color); font-weight: 600;">💵 {{ oferta.sueldo }}</span>
                 {% endif %}
             </div>
-            <!-- In a future step, this would redirect to a real detail page. Using # for now. -->
-            {% if request.user.is_authenticated and request.user.profile.role == 'postulante' %}
-                {% if oferta.id in postulaciones_ids %}
-                    <button class="btn btn-outline" style="width: 100%; font-weight: 600; color: #10b981; border-color: #10b981; cursor: default;" disabled>✅ Ya Postulaste</button>
-                {% else %}
-                    <a href="{% url 'aplicar_oferta' oferta.id %}" class="btn btn-primary" style="width: 100%; font-weight: 600; text-align: center; display: block; text-decoration: none;">Postular Ahora</a>
-                {% endif %}
-            {% else %}
-                <button class="btn btn-outline view-job-btn" style="width: 100%; font-weight: 600;">Ver Detalles</button>
-            {% endif %}
+            <!-- Job detail / apply button -->
+            <a href="{% url 'detalle_oferta' oferta.id %}" class="btn btn-primary" style="width: 100%; font-weight: 600; text-align: center; display: block; text-decoration: none;">Ver Detalles →</a>
         </div>
         {% empty %}
         <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: white; border-radius: 1rem; border: 1px dashed #cbd5e1;">

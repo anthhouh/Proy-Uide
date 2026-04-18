@@ -53,14 +53,37 @@ class Oferta(models.Model):
         ('freelance', 'Freelance/Contrato'),
         ('pasantia', 'Pasantía/Prácticas'),
     )
-    
+    ETIQUETA_CHOICES = (
+        ('tecnologia', 'Tecnología e Informática'),
+        ('diseño_web', 'Diseño Web / UI-UX'),
+        ('administracion', 'Administración / Gestión'),
+        ('ventas', 'Ventas y Marketing'),
+        ('contabilidad', 'Contabilidad y Finanzas'),
+        ('educacion', 'Educación / Docencia'),
+        ('salud', 'Salud y Medicina'),
+        ('ingenieria', 'Ingeniería y Construcción'),
+        ('logistica', 'Logística y Transporte'),
+        ('moda', 'Moda y Textil'),
+        ('gastronomia', 'Gastronomía y Turismo'),
+        ('legal', 'Legal y Jurídico'),
+        ('recursos_humanos', 'Recursos Humanos'),
+        ('otro', 'Otro / General'),
+    )
+
     empresa = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='ofertas')
     titulo = models.CharField(max_length=255)
     descripcion = models.TextField()
     modalidad = models.CharField(max_length=50, choices=MODALIDAD_CHOICES, default='presencial')
     tipo_contrato = models.CharField(max_length=50, choices=CONTRATO_CHOICES, default='tiempo_completo')
     ubicacion = models.CharField(max_length=255, blank=True)
+    ubicacion_mapa_url = models.URLField(blank=True, verbose_name="Enlace Google Maps de la ubicación")
     sueldo = models.CharField(max_length=100, blank=True, verbose_name="Sueldo (opcional)")
+    etiqueta = models.CharField(
+        max_length=50,
+        choices=ETIQUETA_CHOICES,
+        default='otro',
+        verbose_name='Categoría / Etiqueta'
+    )
     estado = models.BooleanField(default=True, verbose_name="Oferta Activa")
     fecha_publicacion = models.DateTimeField(auto_now_add=True)
 

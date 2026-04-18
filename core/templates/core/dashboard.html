@@ -65,13 +65,13 @@ body { background-color: var(--bg-main); }
 }
 .stats-grid-post {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
     margin-bottom: 2.5rem;
 }
 @media (max-width: 1024px) {
     .stats-grid-post {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 @media (max-width: 600px) {
@@ -345,12 +345,7 @@ body { background-color: var(--bg-main); }
                 <div class="stat-label-post">Cumplen Requisitos</div>
                 <div class="stat-value-post">{{ stats_empresa.cumplen }}</div>
             </div>
-            <div class="stat-card-post">
-                <a href="{% url 'index' %}" class="stat-trend" style="color:var(--primary-color); text-decoration:none;">Ir a Kanban</a>
-                <div class="stat-icon-post" style="background:#fffbeb; color:#f59e0b;">📊</div>
-                <div class="stat-label-post">Gestión Completa</div>
-                <div class="stat-value-post">Total</div>
-            </div>
+
         </div>
 
         <div class="main-grid-post">
@@ -388,18 +383,6 @@ body { background-color: var(--bg-main); }
                         <p style="color:var(--text-muted); margin: 0;">No tienes candidatos pendientes por revisar.</p>
                     </div>
                     {% endfor %}
-                </div>
-            </div>
-
-            <div class="main-content-right">
-                <div class="side-card white">
-                    <h4 style="margin-bottom:1.5rem;">Acciones Rápidas</h4>
-                    <a href="{% url 'editar_perfil' %}" class="btn btn-primary w-full mt-2" style="font-size:1rem; padding:0.875rem; text-align:center; display:block; text-decoration:none; margin-bottom:1rem;">
-                        + Publicar vacantes (Editar Perfil)
-                    </a>
-                    <a href="{% url 'index' %}" class="btn btn-outline w-full mt-2" style="font-size:1rem; padding:0.875rem; text-align:center; display:block; text-decoration:none;">
-                        📊 Abrir Tablero Kanban
-                    </a>
                 </div>
             </div>
         </div>
@@ -468,25 +451,8 @@ body { background-color: var(--bg-main); }
                     <h4><span style="color:var(--primary-color);">⚡</span> Búsqueda rápida</h4>
                     <form action="{% url 'index' %}" method="GET">
                         <input type="text" name="q" placeholder="🔍 Cargo o empresa...">
-                        <input type="text" name="u" placeholder="📍 Loja, Ecuador">
                         <button type="submit" class="btn btn-primary w-full mt-2" style="font-size:1rem; padding:0.875rem;">Buscar ahora</button>
                     </form>
-                </div>
-
-                <!-- Fortaleza del perfil -->
-                <div class="side-card white">
-                    <h4 style="margin-bottom:1.5rem;">Fortaleza del perfil</h4>
-                    <div class="progress-labels">
-                        <span style="color:var(--text-muted); font-weight:500;">Básico</span>
-                        <span style="color:var(--primary-color);">50%</span>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress-bar" style="width: 50%;"></div>
-                    </div>
-                    <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.5; margin-bottom:1rem;">
-                        Vuelve a la configuración de Perfil para que los reclutadores sepan más de ti.
-                    </p>
-                    <a href="{% url 'editar_perfil' %}" style="color:var(--primary-color); font-weight:600; font-size:0.875rem;">Completar perfil →</a>
                 </div>
             </div>
         </div>

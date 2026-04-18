@@ -152,14 +152,17 @@ def empleo(request):
 
 def buscar_empleos(request):
     query = request.GET.get('q', '')
-    ubicacion = request.GET.get('u', '')
-    
+    cat = request.GET.get('cat', '')
+    mod = request.GET.get('mod', '')
+
     ofertas = Oferta.objects.filter(estado=True)
     if query:
         ofertas = ofertas.filter(titulo__unaccent__icontains=query)
-    if ubicacion:
-        ofertas = ofertas.filter(ubicacion__unaccent__icontains=ubicacion)
-        
+    if cat:
+        ofertas = ofertas.filter(etiqueta=cat)
+    if mod:
+        ofertas = ofertas.filter(modalidad=mod)
+
     ofertas = ofertas.order_by('-fecha_publicacion')
 
     postulaciones_ids = []
@@ -170,7 +173,8 @@ def buscar_empleos(request):
     return render(request, 'core/buscar_empleos.html', {
         'ofertas': ofertas,
         'q': query,
-        'u': ubicacion,
+        'cat': cat,
+        'mod': mod,
         'postulaciones_ids': postulaciones_ids,
         'total_vacantes': ofertas.count()
     })
@@ -261,7 +265,7 @@ def editar_oferta(request, oferta_id):
         if form.is_valid():
             form.save()
             messages.success(request, '¡Vacante actualizada exitosamente!')
-            return redirect('editar_perfil')
+            return redirect('index')
     else:
         form = OfertaForm(instance=oferta)
         
@@ -321,8 +325,26 @@ def aplicar_oferta(request, oferta_id):
         messages.success(request, f'¡Has postulado exitosamente a {oferta.titulo}!')
     else:
         messages.info(request, 'Ya habías postulado a esta oferta anteriormente.')
-        
-    return redirect('index')
+    
+    # Redirect back to the detail page after applying
+    next_url = request.GET.get('next', 'index')
+    return redirect(next_url)
+
+
+def detalle_oferta(request, oferta_id):
+    """Public-facing job detail page."""
+    oferta = get_object_or_404(Oferta, id=oferta_id, estado=True)
+    
+    ya_postulo = False
+    user_profile = getattr(request.user, 'profile', None) if request.user.is_authenticated else None
+    if user_profile and user_profile.role == 'postulante':
+        ya_postulo = Postulacion.objects.filter(postulante=user_profile, oferta=oferta).exists()
+    
+    return render(request, 'core/detalle_oferta.html', {
+        'oferta': oferta,
+        'ya_postulo': ya_postulo,
+        'user_profile': user_profile,
+    })
 
 
 # ── Manejadores de errores HTTP personalizados ──

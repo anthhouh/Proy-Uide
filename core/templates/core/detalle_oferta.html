@@ -1,0 +1,562 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ oferta.titulo }} — {{ oferta.empresa.empresa_nombre }}{% endblock %}
+
+{% block content %}
+<style>
+/* ── Job Detail Page ── */
+:root {
+    --jd-bg: #f8fafc;
+    --jd-card: #ffffff;
+    --jd-primary: #2563eb;
+    --jd-primary-light: #eff6ff;
+    --jd-text-title: #0f172a;
+    --jd-text-body: #475569;
+    --jd-text-muted: #94a3b8;
+    --jd-border: #e2e8f0;
+    --jd-radius: 1.25rem;
+    --jd-shadow: 0 10px 25px -5px rgba(0,0,0,0.06), 0 4px 10px -3px rgba(0,0,0,0.03);
+}
+
+body { background: var(--jd-bg); }
+
+.jd-wrapper {
+    max-width: 1100px;
+    margin: 2.5rem auto;
+    padding: 0 1.25rem;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 2rem;
+    align-items: start;
+}
+
+/* ── Cards ── */
+.jd-card {
+    background: var(--jd-card);
+    border: 1px solid var(--jd-border);
+    border-radius: var(--jd-radius);
+    box-shadow: var(--jd-shadow);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+.jd-card-body { padding: 2rem; }
+.jd-section-title {
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: var(--jd-text-title);
+    margin: 0 0 1.25rem 0;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--jd-border);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+/* ── Hero banner inside main card ── */
+.jd-hero-banner {
+    height: 130px;
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 60%, #06b6d4 100%);
+    position: relative;
+    overflow: hidden;
+}
+.jd-hero-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Logo floating out of banner */
+.jd-logo-wrap {
+    width: 90px;
+    height: 90px;
+    border-radius: 1rem;
+    border: 4px solid white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin: -45px 0 1.25rem 2rem;
+    position: relative;
+    z-index: 2;
+}
+.jd-logo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.jd-logo-initial {
+    font-size: 2.25rem;
+    font-weight: 900;
+    color: var(--jd-primary);
+    background: var(--jd-primary-light);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.jd-title-block { padding: 0 2rem 2rem 2rem; }
+.jd-job-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--jd-text-title);
+    margin: 0 0 0.4rem 0;
+    line-height: 1.2;
+}
+.jd-company-name {
+    font-size: 1.05rem;
+    color: var(--jd-primary);
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.jd-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+.jd-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #475569;
+}
+.jd-chip.blue   { background: #eff6ff; color: #1d4ed8; }
+.jd-chip.green  { background: #f0fdf4; color: #15803d; }
+.jd-chip.purple { background: #f3e8ff; color: #7c3aed; }
+.jd-chip.orange { background: #fff7ed; color: #c2410c; }
+
+/* ── Description ── */
+.jd-description-text {
+    font-size: 1rem;
+    line-height: 1.85;
+    color: var(--jd-text-body);
+    white-space: pre-wrap;
+}
+
+/* ── Info grid ── */
+.jd-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.25rem;
+}
+.jd-info-item { display: flex; flex-direction: column; gap: 0.2rem; }
+.jd-info-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--jd-text-muted);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.jd-info-value {
+    font-size: 0.95rem;
+    color: var(--jd-text-title);
+    font-weight: 600;
+}
+
+/* ── Map block (mirrors perfil.html style) ── */
+.jd-map-wrap {
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid var(--jd-border);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+.jd-map-link {
+    display: block;
+    width: 100%;
+    height: 170px;
+    background: #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    transition: transform 0.2s;
+}
+.jd-map-link:hover .jd-map-btn { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.12); }
+.jd-map-pin {
+    position: absolute;
+    border-radius: 50%;
+}
+.jd-map-overlay {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(transparent, rgba(0,0,0,0.82));
+    padding: 3rem 1.5rem 1.25rem 1.5rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.jd-map-label {
+    font-size: 1rem;
+    font-weight: 800;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+.jd-map-btn {
+    background: white;
+    color: var(--jd-text-title);
+    padding: 0.45rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+.jd-map-caption {
+    padding: 0.85rem 1.25rem;
+    font-size: 0.82rem;
+    color: var(--jd-text-body);
+    background: var(--jd-card);
+}
+
+/* ── Sidebar (Action card) ── */
+.jd-action-card {
+    background: var(--jd-card);
+    border: 1px solid var(--jd-border);
+    border-radius: var(--jd-radius);
+    box-shadow: var(--jd-shadow);
+    overflow: hidden;
+    position: sticky;
+    top: 6rem;
+}
+.jd-action-header {
+    padding: 1.5rem 1.5rem 0 1.5rem;
+    border-bottom: 1px solid var(--jd-border);
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+.jd-action-salary {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--jd-primary);
+    margin-bottom: 0.3rem;
+}
+.jd-action-salary-sub {
+    font-size: 0.8rem;
+    color: var(--jd-text-muted);
+}
+.jd-action-body { padding: 0 1.5rem 1.5rem 1.5rem; }
+.jd-action-list { list-style: none; padding: 0; margin: 0 0 1.5rem 0; display: flex; flex-direction: column; gap: 0.75rem; }
+.jd-action-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--jd-text-body);
+}
+.jd-action-list li strong { color: var(--jd-text-title); }
+.jd-action-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 8px;
+    background: var(--jd-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+.jd-btn-apply {
+    display: block;
+    width: 100%;
+    padding: 0.9rem;
+    background: var(--jd-primary);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+    margin-bottom: 0.75rem;
+}
+.jd-btn-apply:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,0.45); }
+.jd-btn-applied {
+    display: block;
+    width: 100%;
+    padding: 0.9rem;
+    background: #f0fdf4;
+    color: #15803d;
+    border: 2px solid #86efac;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    cursor: default;
+    margin-bottom: 0.75rem;
+}
+.jd-btn-login {
+    display: block;
+    width: 100%;
+    padding: 0.9rem;
+    background: white;
+    color: var(--jd-primary);
+    border: 2px solid var(--jd-primary);
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s;
+    margin-bottom: 0.75rem;
+}
+.jd-btn-login:hover { background: var(--jd-primary-light); }
+
+.jd-company-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--jd-text-muted);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.jd-company-link:hover { color: var(--jd-primary); }
+
+/* Date badge */
+.jd-date-badge {
+    background: #f1f5f9;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    font-size: 0.78rem;
+    color: var(--jd-text-muted);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Breadcrumb */
+.jd-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--jd-text-muted);
+    margin-bottom: 1.5rem;
+}
+.jd-breadcrumb a { color: var(--jd-primary); text-decoration: none; font-weight: 600; }
+.jd-breadcrumb a:hover { text-decoration: underline; }
+
+@media (max-width: 900px) {
+    .jd-wrapper { grid-template-columns: 1fr; }
+    .jd-action-card { position: static; }
+}
+</style>
+
+{% load static %}
+
+<div style="max-width:1100px; margin:0 auto; padding:1.5rem 1.25rem 0 1.25rem;">
+    <nav class="jd-breadcrumb">
+        <a href="{% url 'index' %}">Inicio</a>
+        <span>›</span>
+        <a href="{% url 'buscar_empleos' %}">Empleos</a>
+        <span>›</span>
+        <span>{{ oferta.titulo }}</span>
+    </nav>
+</div>
+
+<div class="jd-wrapper">
+
+    <!-- ══ LEFT / MAIN ══ -->
+    <div class="jd-main">
+
+        <!-- Hero card -->
+        <div class="jd-card">
+            <div class="jd-hero-banner"></div>
+
+            <!-- Logo floating out of banner -->
+            <div class="jd-logo-wrap">
+                {% if oferta.empresa.empresa_logo %}
+                    <img src="{{ oferta.empresa.empresa_logo.url }}" alt="Logo {{ oferta.empresa.empresa_nombre }}">
+                {% elif oferta.empresa.foto_perfil %}
+                    <img src="{{ oferta.empresa.foto_perfil.url }}" alt="Logo {{ oferta.empresa.empresa_nombre }}">
+                {% else %}
+                    <div class="jd-logo-initial">{{ oferta.empresa.empresa_nombre|make_list|first|default:"E"|upper }}</div>
+                {% endif %}
+            </div>
+
+            <div class="jd-title-block">
+                <h1 class="jd-job-title">{{ oferta.titulo }}</h1>
+                <div class="jd-company-name">
+                    🏢 {{ oferta.empresa.empresa_nombre|default:"Empresa" }}
+                </div>
+
+                <div class="jd-meta-row">
+                    <span class="jd-date-badge">🕐 Publicada el {{ oferta.fecha_publicacion|date:"d \d\e F Y" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="jd-card">
+            <div class="jd-card-body">
+                <h2 class="jd-section-title">📋 Descripción del puesto</h2>
+                <div class="jd-description-text">{{ oferta.descripcion }}</div>
+            </div>
+        </div>
+
+        <!-- Google Maps Location -->
+        {% if oferta.ubicacion_mapa_url %}
+        <div class="jd-card">
+            <div class="jd-card-body">
+                <h2 class="jd-section-title">🗺️ Ubicación en el mapa</h2>
+                <div class="jd-map-wrap">
+                    <a href="{{ oferta.ubicacion_mapa_url }}" target="_blank" class="jd-map-link"
+                       onmouseover="this.querySelector('.jd-map-btn').style.transform='translateY(-2px)'; this.querySelector('.jd-map-btn').style.boxShadow='0 4px 6px rgba(0,0,0,0.1)';"
+                       onmouseout="this.querySelector('.jd-map-btn').style.transform='translateY(0)'; this.querySelector('.jd-map-btn').style.boxShadow='none';">
+
+                        <!-- Decorative map dots -->
+                        <div class="jd-map-pin" style="top:30%; left:22%; width:14px; height:14px; background:#ef4444; box-shadow:0 0 0 6px rgba(239,68,68,0.3);"></div>
+                        <div class="jd-map-pin" style="top:55%; left:50%; width:14px; height:14px; background:#3b82f6; box-shadow:0 0 0 6px rgba(59,130,246,0.3);"></div>
+                        <div class="jd-map-pin" style="top:18%; right:28%; width:14px; height:14px; background:#10b981; box-shadow:0 0 0 6px rgba(16,185,129,0.3);"></div>
+
+                        <!-- Decorative road lines -->
+                        <svg width="100%" height="100%" style="opacity:0.18; position:absolute; top:0; left:0; pointer-events:none;">
+                            <path d="M0 50 Q 120 20 240 70 T 480 40" stroke="#94a3b8" stroke-width="4" fill="none"/>
+                            <path d="M60 0 L 180 170" stroke="#94a3b8" stroke-width="3" fill="none"/>
+                            <path d="M300 0 Q 350 80 400 170" stroke="#94a3b8" stroke-width="3" fill="none"/>
+                        </svg>
+
+                        <div class="jd-map-overlay">
+                            <span class="jd-map-label">🗺️ Ver en Google Maps</span>
+                            <span class="jd-map-btn">Ir a ubicación ↗</span>
+                        </div>
+                    </a>
+                    <div class="jd-map-caption">
+                        Haz clic para ver la ubicación exacta del lugar de trabajo en el mapa interactivo.
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Company card -->
+        <div class="jd-card">
+            <div class="jd-card-body">
+                <h2 class="jd-section-title">🏢 Acerca de la empresa</h2>
+                <div style="display:flex; gap:1.25rem; align-items:center; margin-bottom:1.25rem;">
+                    <div style="width:60px; height:60px; border-radius:0.75rem; border:1px solid var(--jd-border); background:white; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+                        {% if oferta.empresa.empresa_logo %}
+                            <img src="{{ oferta.empresa.empresa_logo.url }}" alt="Logo" style="width:100%; height:100%; object-fit:cover;">
+                        {% elif oferta.empresa.foto_perfil %}
+                            <img src="{{ oferta.empresa.foto_perfil.url }}" alt="Logo" style="width:100%; height:100%; object-fit:cover;">
+                        {% else %}
+                            <span style="font-size:1.5rem; font-weight:900; color:var(--jd-primary);">{{ oferta.empresa.empresa_nombre|make_list|first|default:"E"|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div style="font-size:1.1rem; font-weight:800; color:var(--jd-text-title);">{{ oferta.empresa.empresa_nombre|default:"Empresa" }}</div>
+                        {% if oferta.empresa.empresa_direccion %}
+                        <div style="font-size:0.875rem; color:var(--jd-text-muted); margin-top:0.25rem;">📍 {{ oferta.empresa.empresa_direccion }}</div>
+                        {% endif %}
+                        {% if oferta.empresa.empresa_capacidad_empleados %}
+                        <div style="font-size:0.875rem; color:var(--jd-text-muted);">👥 {{ oferta.empresa.empresa_capacidad_empleados }} empleados</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if oferta.empresa.descripcion %}
+                <p style="font-size:0.95rem; line-height:1.75; color:var(--jd-text-body);">{{ oferta.empresa.descripcion }}</p>
+                {% endif %}
+                {% if oferta.empresa.empresa_sitio_web %}
+                <a href="{{ oferta.empresa.empresa_sitio_web }}" target="_blank" style="display:inline-flex; align-items:center; gap:0.4rem; margin-top:1rem; font-size:0.875rem; color:var(--jd-primary); font-weight:600; text-decoration:none;">
+                    🌐 Visitar sitio web ↗
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ══ RIGHT / SIDEBAR ══ -->
+    <aside>
+        <div class="jd-action-card">
+            <div class="jd-action-header">
+                {% if oferta.sueldo %}
+                    <div class="jd-action-salary">{{ oferta.sueldo }}</div>
+                    <div class="jd-action-salary-sub">Remuneración estimada</div>
+                {% else %}
+                    <div class="jd-action-salary" style="font-size:1.2rem; color:var(--jd-text-muted);">A convenir</div>
+                    <div class="jd-action-salary-sub">Consultar en la entrevista</div>
+                {% endif %}
+            </div>
+            <div class="jd-action-body">
+                <ul class="jd-action-list">
+                    <li>
+                        <div class="jd-action-icon">📂</div>
+                        <div><div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--jd-text-muted); font-weight:700;">Modalidad</div>
+                        <strong>{{ oferta.get_modalidad_display }}</strong></div>
+                    </li>
+                    <li>
+                        <div class="jd-action-icon">📝</div>
+                        <div><div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--jd-text-muted); font-weight:700;">Contrato</div>
+                        <strong>{{ oferta.get_tipo_contrato_display }}</strong></div>
+                    </li>
+                    {% if oferta.ubicacion %}
+                    <li>
+                        <div class="jd-action-icon">📍</div>
+                        <div><div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--jd-text-muted); font-weight:700;">Ubicación</div>
+                        <strong>{{ oferta.ubicacion }}</strong></div>
+                    </li>
+                    {% endif %}
+                    <li>
+                        <div class="jd-action-icon">👥</div>
+                        <div><div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--jd-text-muted); font-weight:700;">Postulantes</div>
+                        <strong>{{ oferta.aplicaciones.count }} aplicantes</strong></div>
+                    </li>
+                </ul>
+
+                <!-- Apply / Login CTA -->
+                {% if request.user.is_authenticated %}
+                    {% if user_profile.role == 'postulante' %}
+                        {% if ya_postulo %}
+                            <div class="jd-btn-applied">✅ Ya te postulaste</div>
+                        {% else %}
+                            <a href="{% url 'aplicar_oferta' oferta.id %}?next={% url 'detalle_oferta' oferta.id %}" class="jd-btn-apply">
+                                🚀 Postular Ahora
+                            </a>
+                        {% endif %}
+                    {% elif user_profile.role == 'empresa' %}
+                        <div style="background:#f1f5f9; border-radius:0.75rem; padding:1rem; text-align:center; font-size:0.85rem; color:var(--jd-text-muted);">
+                            Estás viendo esta oferta como empresa.
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'login' %}?next={% url 'detalle_oferta' oferta.id %}" class="jd-btn-login">
+                        🔐 Iniciar sesión para postular
+                    </a>
+                    <a href="{% url 'registro' %}" style="display:block; text-align:center; font-size:0.85rem; color:var(--jd-text-muted); text-decoration:none; margin-top:0.5rem; font-weight:500;">
+                        ¿No tienes cuenta? <span style="color:var(--jd-primary); font-weight:700;">Regístrate gratis →</span>
+                    </a>
+                {% endif %}
+
+                <!-- Link to company profile -->
+                <div style="margin-top:1.25rem; padding-top:1.25rem; border-top:1px solid var(--jd-border);">
+                    <a href="{% url 'perfil' %}?id={{ oferta.empresa.id }}" class="jd-company-link">
+                        🏢 Ver perfil de {{ oferta.empresa.empresa_nombre|default:"la empresa" }} →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+</div>
+{% endblock %}

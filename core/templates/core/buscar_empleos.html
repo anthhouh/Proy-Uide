@@ -304,45 +304,41 @@ body {
                 <span class="filter-clear">Limpiar</span>
             </div>
 
-            <div class="filter-group">
-                <div class="filter-title">Categoría</div>
-                <label class="filter-option">
-                    <input type="checkbox" checked> Tecnología
-                </label>
-                <label class="filter-option">
-                    <input type="checkbox"> Administración
-                </label>
-                <label class="filter-option">
-                    <input type="checkbox"> Ventas
-                </label>
-                <label class="filter-option">
-                    <input type="checkbox"> Diseño
-                </label>
-            </div>
+            <form method="GET" action="{% url 'buscar_empleos' %}">
+                {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
 
-            <div class="filter-group">
-                <div class="filter-title">Tipo de Contrato</div>
-                <label class="filter-option">
-                    <input type="radio" name="contrato"> Tiempo completo
-                </label>
-                <label class="filter-option">
-                    <input type="radio" name="contrato"> Medio tiempo
-                </label>
-                <label class="filter-option">
-                    <input type="radio" name="contrato"> Freelance
-                </label>
-            </div>
-
-            <div class="filter-group">
-                <div class="filter-title">Rango Salarial</div>
-                <input type="range" class="range-slider" min="450" max="3000" value="1500">
-                <div class="range-labels">
-                    <span>$450</span>
-                    <span>$3000+</span>
+                <div class="filter-group">
+                    <div class="filter-title">Categoría</div>
+                    <label class="filter-option"><input type="radio" name="cat" value="" {% if not cat %}checked{% endif %}> Todas</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="tecnologia" {% if cat == 'tecnologia' %}checked{% endif %}> Tecnología e Informática</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="diseño_web" {% if cat == 'diseño_web' %}checked{% endif %}> Diseño Web / UI-UX</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="administracion" {% if cat == 'administracion' %}checked{% endif %}> Administración</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="ventas" {% if cat == 'ventas' %}checked{% endif %}> Ventas y Marketing</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="contabilidad" {% if cat == 'contabilidad' %}checked{% endif %}> Contabilidad</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="educacion" {% if cat == 'educacion' %}checked{% endif %}> Educación</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="salud" {% if cat == 'salud' %}checked{% endif %}> Salud y Medicina</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="ingenieria" {% if cat == 'ingenieria' %}checked{% endif %}> Ingeniería</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="logistica" {% if cat == 'logistica' %}checked{% endif %}> Logística</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="moda" {% if cat == 'moda' %}checked{% endif %}> Moda y Textil</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="gastronomia" {% if cat == 'gastronomia' %}checked{% endif %}> Gastronomía</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="legal" {% if cat == 'legal' %}checked{% endif %}> Legal</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="recursos_humanos" {% if cat == 'recursos_humanos' %}checked{% endif %}> Recursos Humanos</label>
+                    <label class="filter-option"><input type="radio" name="cat" value="otro" {% if cat == 'otro' %}checked{% endif %}> Otro / General</label>
                 </div>
-            </div>
 
-            <button class="btn btn-primary w-full mt-4">Aplicar filtros</button>
+                <div class="filter-group">
+                    <div class="filter-title">Modalidad</div>
+                    <label class="filter-option"><input type="radio" name="mod" value="" {% if not mod %}checked{% endif %}> Todas</label>
+                    <label class="filter-option"><input type="radio" name="mod" value="presencial" {% if mod == 'presencial' %}checked{% endif %}> Presencial</label>
+                    <label class="filter-option"><input type="radio" name="mod" value="remoto" {% if mod == 'remoto' %}checked{% endif %}> Remoto</label>
+                    <label class="filter-option"><input type="radio" name="mod" value="hibrido" {% if mod == 'hibrido' %}checked{% endif %}> Híbrido</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-full mt-4">Aplicar filtros</button>
+                {% if cat or mod %}
+                <a href="{% url 'buscar_empleos' %}{% if q %}?q={{ q }}{% endif %}" class="btn btn-outline w-full mt-2" style="text-align:center; display:block; text-decoration:none; margin-top:0.5rem;">Limpiar filtros</a>
+                {% endif %}
+            </form>
         </div>
 
         <div class="help-card">
@@ -386,6 +382,7 @@ body {
                     </div>
                     <div class="job-h-badges">
                         <span class="job-badge">📂 {{ oferta.get_modalidad_display }}</span>
+                        <span class="job-badge" style="background:#f3e8ff; color:#7c3aed;">🏷️ {{ oferta.get_etiqueta_display }}</span>
                         <span class="job-badge badge-action">⚡ Postulación rápida</span>
                     </div>
                     <div class="job-h-candidates">
@@ -399,12 +396,12 @@ body {
                     </div>
                     {% if request.user.is_authenticated and request.user.profile.role == 'postulante' %}
                         {% if oferta.id in postulaciones_ids %}
-                            <button class="btn btn-outline" style="background:#f1f5f9; color:#10b981; border-color:#10b981; cursor:default; white-space: nowrap;" disabled>✅ Ya Postulaste</button>
+                            <a href="{% url 'detalle_oferta' oferta.id %}" class="btn btn-outline" style="background:#f1f5f9; color:#10b981; border-color:#10b981; white-space: nowrap; text-decoration:none; text-align:center;">✅ Ya Postulaste</a>
                         {% else %}
-                            <a href="{% url 'aplicar_oferta' oferta.id %}" class="btn btn-primary" style="text-decoration:none; text-align:center; white-space: nowrap;">Postular Ahora</a>
+                            <a href="{% url 'detalle_oferta' oferta.id %}" class="btn btn-primary" style="text-decoration:none; text-align:center; white-space: nowrap;">Ver Detalles →</a>
                         {% endif %}
                     {% else %}
-                        <button class="btn btn-outline view-job-btn" style="background:#0f172a; color:white; border-color:#0f172a; white-space: nowrap;">Ver detalles</button>
+                        <a href="{% url 'detalle_oferta' oferta.id %}" class="btn btn-outline" style="background:#0f172a; color:white; border-color:#0f172a; white-space: nowrap; text-decoration:none; text-align:center;">Ver detalles →</a>
                     {% endif %}
                 </div>
             </div>
