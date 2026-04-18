@@ -253,7 +253,7 @@
         <button onclick="closeAuthModal()" style="position:absolute; top:1rem; right:1rem; background:#f1f5f9; border:none; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; color:#64748b; transition:background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">✕</button>
 
         <!-- Tabs -->
-        <div style="display:flex; border-bottom:1px solid #e2e8f0; padding:1.5rem 2rem 0;">
+        <div id="authTabsWrapper" style="display:flex; border-bottom:1px solid #e2e8f0; padding:1.5rem 2rem 0;">
             <button id="tabLoginBtn" onclick="switchTab('login')" style="flex:1; padding:0.75rem; font-size:1rem; font-weight:700; border:none; background:none; cursor:pointer; border-bottom:3px solid #2563eb; color:#2563eb; transition:all 0.2s;">Iniciar Sesión</button>
             <button id="tabRegBtn" onclick="switchTab('registro')" style="flex:1; padding:0.75rem; font-size:1rem; font-weight:700; border:none; background:none; cursor:pointer; border-bottom:3px solid transparent; color:#94a3b8; transition:all 0.2s;">Crear Cuenta</button>
         </div>
@@ -336,6 +336,24 @@
             </form>
             <p style="margin-top:1.25rem; text-align:center; font-size:0.875rem; color:#64748b;">¿Ya tienes cuenta? <button onclick="switchTab('login')" style="background:none; border:none; color:#2563eb; font-weight:700; cursor:pointer; font-size:0.875rem;">Inicia sesión</button></p>
         </div>
+        
+        <!-- ── VERIFICACION FORM ── -->
+        <div id="formVerificacion" style="display:none; padding:1.75rem 2rem 2rem; max-height:80vh; overflow-y:auto;">
+            <p style="margin:0 0 1.5rem; color:#64748b; font-size:0.9rem;">Te hemos enviado un código a tu correo. Ingrésalo a continuación (expira en 15 minutos).</p>
+            <form id="verificacionForm" onsubmit="submitVerificacion(event)">
+                {% csrf_token %}
+                <input type="hidden" name="username" id="verifyUsername">
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem; text-align:center;">Código de 6 dígitos</label>
+                    <input type="text" name="code" id="verifyCode" required placeholder="123456" maxlength="6"
+                        style="width:100%; padding:1.25rem 1rem; border:2px solid #e2e8f0; border-radius:1rem; font-size:2rem; font-weight:800; text-align:center; letter-spacing:0.4em; outline:none; transition:border-color 0.2s, background-color 0.2s; box-sizing:border-box; background:#f8fafc;"
+                        onfocus="this.style.borderColor='#2563eb'; this.style.backgroundColor='white';" 
+                        onblur="this.style.borderColor='#e2e8f0'">
+                </div>
+                <button type="submit" id="verifySubmitBtn" class="btn btn-primary" style="width:100%; padding:1rem; font-size:1.05rem; font-weight:700; border-radius:1rem; transition:all 0.2s;">Validar y Entrar →</button>
+            </form>
+            <p style="margin-top:1.25rem; text-align:center; font-size:0.875rem; color:#64748b;">¿Te equivocaste de correo? <button onclick="switchTab('registro')" style="background:none; border:none; color:#2563eb; font-weight:700; cursor:pointer; font-size:0.875rem;">Volver al registro</button></p>
+        </div>
     </div>
 </div>
 
@@ -402,6 +420,13 @@ function switchTab(tab) {
     const isLogin = tab === 'login';
     document.getElementById('formLogin').style.display    = isLogin ? 'block' : 'none';
     document.getElementById('formRegistro').style.display = isLogin ? 'none'  : 'block';
+    
+    // Hide verification step if tab switched
+    const verifForm = document.getElementById('formVerificacion');
+    if (verifForm) verifForm.style.display = 'none';
+    const tabsWrapper = document.getElementById('authTabsWrapper');
+    if (tabsWrapper) tabsWrapper.style.display = 'flex';
+    
     // Tab buttons style
     const loginBtn = document.getElementById('tabLoginBtn');
     const regBtn   = document.getElementById('tabRegBtn');
@@ -474,8 +499,23 @@ async function submitRegistro(e) {
         const res = await fetch('/ajax/registro/', { method:'POST', body: data });
         const json = await res.json();
         if (json.ok) {
-            btn.textContent = '✅ Redirigiendo...';
-            window.location.href = json.redirect;
+            if (json.requires_verification) {
+                // Return button to normal since it didn't complete visually
+                btn.disabled = false; btn.textContent = 'Crear Cuenta →';
+                
+                // Show verification screen dynamically
+                document.getElementById('verifyUsername').value = json.username;
+                document.getElementById('formRegistro').style.display = 'none';
+                document.getElementById('formLogin').style.display = 'none';
+                const tabs = document.getElementById('authTabsWrapper');
+                if (tabs) tabs.style.display = 'none';
+                document.getElementById('authError').style.display = 'none';
+                document.getElementById('formVerificacion').style.display = 'block';
+                setTimeout(() => document.getElementById('verifyCode').focus(), 100);
+            } else {
+                btn.textContent = '✅ Redirigiendo...';
+                window.location.href = json.redirect;
+            }
         } else {
             showAuthError(json.error);
             btn.disabled = false; btn.textContent = 'Crear Cuenta →';
@@ -483,6 +523,28 @@ async function submitRegistro(e) {
     } catch(err) {
         showAuthError('Error de conexión. Intenta nuevamente.');
         btn.disabled = false; btn.textContent = 'Crear Cuenta →';
+    }
+}
+
+async function submitVerificacion(e) {
+    e.preventDefault();
+    const btn = document.getElementById('verifySubmitBtn');
+    btn.disabled = true; btn.textContent = 'Validando...';
+    const form = document.getElementById('verificacionForm');
+    const data = new FormData(form);
+    try {
+        const res = await fetch('/ajax/verificar/', { method:'POST', body: data });
+        const json = await res.json();
+        if (json.ok) {
+            btn.textContent = '✅ Cuenta activada...';
+            window.location.href = json.redirect;
+        } else {
+            showAuthError(json.error);
+            btn.disabled = false; btn.textContent = 'Validar y Entrar →';
+        }
+    } catch(err) {
+        showAuthError('Error de conexión.');
+        btn.disabled = false; btn.textContent = 'Validar y Entrar →';
     }
 }
 

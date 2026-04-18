@@ -147,3 +147,38 @@ class OfertaFoto(models.Model):
 
     def __str__(self):
         return f"Foto de {self.oferta.titulo} (#{self.id})"
+
+# ── Modelos de Configuración y Verificación ──
+
+class ConfiguracionPlataforma(models.Model):
+    requiere_verificacion_correo = models.BooleanField(
+        default=True,
+        verbose_name='Exigir verificación por correo al registrarse'
+    )
+    
+    class Meta:
+        verbose_name = 'Configuración de la Plataforma'
+        verbose_name_plural = 'Configuración de la Plataforma'
+
+    def __str__(self):
+        return "Ajustes Generales"
+
+    def save(self, *args, **kwargs):
+        # Asegurarse de que solo haya un registro de configuración (Singleton)
+        if hasattr(self.__class__, 'objects') and self.__class__.objects.exists() and not self.pk:
+            self.pk = self.__class__.objects.first().pk
+        super().save(*args, **kwargs)
+
+class CodigoVerificacion(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='codigo_verificacion')
+    codigo = models.CharField(max_length=6)
+    creado_en = models.DateTimeField(auto_now_add=True)
+    
+    def ha_expirado(self):
+        from django.utils import timezone
+        import datetime
+        return timezone.now() > self.creado_en + datetime.timedelta(minutes=15)
+        
+    def __str__(self):
+        return f"Código {self.codigo} para {self.user.username}"
+

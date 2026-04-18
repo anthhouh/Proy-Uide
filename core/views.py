@@ -6,8 +6,10 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db.models import Q
+from django.core.mail import send_mail
 import json
-from .models import Profile, Oferta, ClasificacionCandidato, Postulacion, Resena, OfertaFoto
+import random
+from .models import Profile, Oferta, ClasificacionCandidato, Postulacion, Resena, OfertaFoto, ConfiguracionPlataforma, CodigoVerificacion
 from .forms import UserEditForm, ProfileEditForm, EmpresaProfileEditForm, OfertaForm
 
 def index(request):
@@ -167,7 +169,73 @@ def ajax_registro(request):
         return JsonResponse({'ok': False, 'error': 'El correo ya está registrado.'}, status=400)
 
     user = User.objects.create_user(username=username, email=email, password=password)
-    Profile.objects.create(user=user, role=role, nombre_visualizacion=nombre)
+    
+    config = ConfiguracionPlataforma.objects.first()
+    requires_verification = config.requiere_verificacion_correo if config else True
+    
+    if requires_verification:
+        user.is_active = False
+        user.save()
+        Profile.objects.create(user=user, role=role, nombre_visualizacion=nombre)
+        
+        codigo_generado = str(random.randint(100000, 999999))
+        CodigoVerificacion.objects.create(user=user, codigo=codigo_generado)
+        
+        try:
+            send_mail(
+                'Tu código de verificación - Empleos Loja',
+                f'Hola {nombre},\n\nTu código de verificación es: {codigo_generado}\n\nIngresa este código para activar tu cuenta. El código expira en 15 minutos.\n\nSaludos,\nEl equipo de Empleos Loja',
+                None,
+                [email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"Error al enviar correo (¿falta SMTP configurado?): {e}")
+        
+        # Siempre imprimimos en consola para facilitar pruebas locales si el SMTP falla
+        print(f"\n=========================================")
+        print(f"CÓDIGO DE VERIFICACIÓN PARA {email}: {codigo_generado}")
+        print(f"=========================================\n")
+        
+        return JsonResponse({'ok': True, 'requires_verification': True, 'username': username})
+    else:
+        Profile.objects.create(user=user, role=role, nombre_visualizacion=nombre)
+        auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        return JsonResponse({'ok': True, 'redirect': '/dashboard/'})
+
+@require_POST
+def ajax_verificar_codigo(request):
+    """AJAX endpoint to verify email code."""
+    username = request.POST.get('username', '').strip()
+    codigo   = request.POST.get('code', '').strip()
+    
+    if not username or not codigo:
+        return JsonResponse({'ok': False, 'error': 'Faltan datos.'}, status=400)
+        
+    user = User.objects.filter(username=username).first()
+    if not user:
+        return JsonResponse({'ok': False, 'error': 'Usuario no encontrado.'}, status=404)
+        
+    if user.is_active:
+        return JsonResponse({'ok': True, 'redirect': '/dashboard/'}) # Ya estaba activo
+        
+    if not hasattr(user, 'codigo_verificacion'):
+        return JsonResponse({'ok': False, 'error': 'No se solicitó verificación para este usuario.'}, status=400)
+        
+    verify_obj = user.codigo_verificacion
+    if verify_obj.ha_expirado():
+        verify_obj.delete()
+        user.delete() # Limpiamos el usuario inactivo para que pueda volver a registrarse con su correo (ya que no paso la validacion a tiempo)
+        return JsonResponse({'ok': False, 'error': 'El código ha expirado. Por favor, regístrate de nuevo.'}, status=400)
+        
+    if verify_obj.codigo != codigo:
+        return JsonResponse({'ok': False, 'error': 'Código incorrecto. Verifica el número e intenta nuevamente.'}, status=400)
+        
+    # Validation successful
+    user.is_active = True
+    user.save()
+    verify_obj.delete()
+    
     auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
     return JsonResponse({'ok': True, 'redirect': '/dashboard/'})
 

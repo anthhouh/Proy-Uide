@@ -22,4 +22,5 @@ urlpatterns = [
     path('resena/<int:resena_id>/eliminar/', views.eliminar_resena, name='eliminar_resena'),
     path('ajax/login/', views.ajax_login, name='ajax_login'),
     path('ajax/registro/', views.ajax_registro, name='ajax_registro'),
+    path('ajax/verificar/', views.ajax_verificar_codigo, name='ajax_verificar'),
 ]
