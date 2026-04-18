@@ -190,9 +190,11 @@ def ajax_registro(request):
                 fail_silently=False,
             )
         except Exception as e:
-            print(f"Error al enviar correo (¿falta SMTP configurado?): {e}")
+            # En producción, si falla el envío, limpiamos el usuario para que no quede estancado y devolvemos el error a la pantalla
+            user.delete()
+            return JsonResponse({'ok': False, 'error': f"Error de correo: {str(e)[:100]}... Revisa credenciales SMTP."})
         
-        # Siempre imprimimos en consola para facilitar pruebas locales si el SMTP falla
+        # Siempre imprimimos en consola para facilitar pruebas locales
         print(f"\n=========================================")
         print(f"CÓDIGO DE VERIFICACIÓN PARA {email}: {codigo_generado}")
         print(f"=========================================\n")
