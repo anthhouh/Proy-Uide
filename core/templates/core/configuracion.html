@@ -3,13 +3,13 @@
 {% block content %}
 <style>
     :root {
-        --bg-page: #f0f4f8;
-        --card-bg: #ffffff;
+        --bg-page: var(--bg-main);
+        --card-bg: var(--bg-card);
         --primary-blue: #3b82f6;
-        --text-dark: #1e293b;
-        --text-gray: #64748b;
-        --border-light: #e2e8f0;
-        --bg-input: #f8fafc;
+        --text-dark: var(--text-main);
+        --text-gray: var(--text-muted);
+        --border-light: var(--border-color);
+        --bg-input: var(--bg-main);
     }
 
     body { background-color: var(--bg-page); }
@@ -83,7 +83,7 @@
     .cfg-form-group input:focus {
         outline: none;
         border-color: var(--primary-blue);
-        background-color: white;
+        background-color: var(--bg-main);
     }
 
     .btn-save {

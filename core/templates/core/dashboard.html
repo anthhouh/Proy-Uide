@@ -80,7 +80,7 @@ body { background-color: var(--bg-main); }
     }
 }
 .stat-card-post {
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
@@ -146,7 +146,7 @@ body { background-color: var(--bg-main); }
 
 /* Recommended Jobs Card */
 .job-card-rec {
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
@@ -218,7 +218,7 @@ body { background-color: var(--bg-main); }
     margin-bottom: 1.5rem;
 }
 .side-card.white {
-    background: white;
+    background: var(--bg-card);
     border-color: var(--border-color);
 }
 .side-card h4 {
@@ -379,7 +379,7 @@ body { background-color: var(--bg-main); }
                         </div>
                     </div>
                     {% empty %}
-                    <div style="text-align:center; padding:3rem; background:white; border-radius:1rem; border:1px dashed var(--border-color);">
+                    <div style="text-align:center; padding:3rem; background:var(--bg-card); border-radius:1rem; border:1px dashed var(--border-color);">
                         <p style="color:var(--text-muted); margin: 0;">No tienes candidatos pendientes por revisar.</p>
                     </div>
                     {% endfor %}

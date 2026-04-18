@@ -4,14 +4,14 @@
 <style>
     /* View Profile Base Colors */
     :root {
-        --bg-page: #f8fafc;
-        --card-bg: #ffffff;
+        --bg-page: var(--bg-main);
+        --card-bg: var(--bg-card);
         --primary-solid: #2563eb;
-        --primary-light: #eff6ff;
-        --text-title: #0f172a;
-        --text-body: #475569;
-        --text-muted: #94a3b8;
-        --border-subtle: #e2e8f0;
+        --primary-light: var(--primary-light);
+        --text-title: var(--text-main);
+        --text-body: var(--text-body);
+        --text-muted: var(--text-muted);
+        --border-subtle: var(--border-color);
         --star-active: #f59e0b;
         --star-inactive: #e2e8f0;
     }
@@ -59,9 +59,9 @@
         margin: -70px auto 1rem auto;
         position: relative;
         border-radius: 50%;
-        border: 5px solid white;
+        border: 5px solid var(--card-bg);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        background: white;
+        background: var(--card-bg);
     }
 
     .v-avatar {
@@ -505,7 +505,7 @@
                                 style="font-size: 1.1rem; font-weight: 800; display: flex; gap: 0.5rem; align-items: center; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">🗺️
                                 Abrir Google Maps</span>
                             <span class="map-overlay-btn"
-                                style="background: white; color: var(--text-title); padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.85rem; font-weight: 700; transition: all 0.2s;">Ir
+                                style="background: var(--bg-card); color: var(--text-title); padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.85rem; font-weight: 700; transition: all 0.2s;">Ir
                                 a ubicación ↗</span>
                         </div>
                     </a>

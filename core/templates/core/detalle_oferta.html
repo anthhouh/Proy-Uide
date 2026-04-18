@@ -8,10 +8,10 @@
 /* ── Job Detail Page ── */
 :root {
     --jd-bg: #f8fafc;
-    --jd-card: #ffffff;
+    --jd-card: var(--bg-card);
     --jd-primary: #2563eb;
-    --jd-primary-light: #eff6ff;
-    --jd-text-title: #0f172a;
+    --jd-primary-light: var(--primary-light);
+    --jd-text-title: var(--text-main);
     --jd-text-body: #475569;
     --jd-text-muted: #94a3b8;
     --jd-border: #e2e8f0;
@@ -72,9 +72,9 @@ body { background: var(--jd-bg); }
     width: 90px;
     height: 90px;
     border-radius: 1rem;
-    border: 4px solid white;
+    border: 4px solid var(--bg-card);
     box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-    background: white;
+    background: var(--bg-card);
     display: flex;
     align-items: center;
     justify-content: center;

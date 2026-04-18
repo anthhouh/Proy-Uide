@@ -18,7 +18,7 @@
 .job-section-header { margin-bottom: 2rem; }
 .job-section-title { font-size: 1.875rem; font-weight: 700; }
 .job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; }
-.job-card { background: white; padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color); transition: all 0.2s ease; }
+.job-card { background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color); transition: all 0.2s ease; }
 .job-card:hover { box-shadow: var(--shadow-md); border-color: #bfdbfe; }
 .job-icon-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
 .job-icon { width: 48px; height: 48px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--text-muted); }
@@ -48,7 +48,7 @@
 }
 
 .kanban-column {
-    background: #f8fafc;
+    background: var(--bg-main);
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
     width: 320px;
@@ -96,7 +96,7 @@
 }
 
 .kanban-card {
-    background: white;
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     padding: 1rem;
@@ -168,7 +168,7 @@
     text-decoration: none;
     text-align: center;
     flex: 1;
-    background: white;
+    background: var(--bg-card);
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -286,7 +286,7 @@
             </div>
         </div>
         {% empty %}
-        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: white; border-radius: 1rem; border: 1px dashed #cbd5e1;">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: var(--bg-card); border-radius: 1rem; border: 1px dashed var(--border-color);">
             <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.4;">📝</div>
             <h3 style="color: var(--text-main); margin-bottom: 0.5rem; font-size: 1.5rem;">Aún no has publicado ofertas</h3>
             <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1.5rem;">Las vacantes que publiques aparecerán aquí.</p>
