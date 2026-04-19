@@ -108,8 +108,22 @@
     gap: 1.5rem;
 }
 @media (max-width: 768px) {
-    .hero-title { font-size: 2.5rem; }
-    .search-input-group { flex-direction: column; align-items: stretch; gap: 1rem; }
+    .hero-title { font-size: 2.2rem; }
+    .search-container {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+    }
+    .search-input-group {
+        width: 100%;
+        padding: 0.5rem 0;
+    }
+    .search-btn {
+        width: 100%;
+    }
+    .trending {
+        flex-wrap: wrap;
+    }
     .job-grid { grid-template-columns: 1fr; }
     .jobs-grid { grid-template-columns: 1fr; }
 }

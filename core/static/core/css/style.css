@@ -415,6 +415,11 @@ main {
     color: var(--text-main);
 }
 
+/* Utility classes (Default Mobile-First or hide-by-default) */
+.show-on-mobile, .show-on-mobile-flex {
+    display: none !important;
+}
+
 /* =========================================
    RESPONSIVE (MOBILES/TABLETS)
    ========================================= */
@@ -435,7 +440,17 @@ main {
     }
 }
 
+.grid-cols-2-responsive {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
 @media (max-width: 768px) {
+    .grid-cols-2-responsive {
+        grid-template-columns: 1fr !important;
+    }
+    
     .container {
         padding: 0 1rem;
     }
@@ -456,8 +471,14 @@ main {
         width: 95%;
     }
     
-    /* Utility class for hiding on mobile */
+    /* Utility classes for responsive visibility */
     .hide-on-mobile {
         display: none !important;
+    }
+    .show-on-mobile {
+        display: block !important;
+    }
+    .show-on-mobile-flex {
+        display: flex !important;
     }
 }

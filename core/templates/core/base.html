@@ -7,9 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loja Empleo</title>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'core/css/style.css' %}?v=1.2">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}?v=1.4">
     <link rel="icon" type="image/png" href="{% static 'core/img/logo.png' %}">
     <script>
         (function() {
@@ -294,13 +293,13 @@
     <!-- ── SIDE MENU PANEL ── -->
     <div id="sideMenuModal" style="display:none; position:fixed; inset:0; z-index:10000; justify-content:flex-end;">
         <div id="sideMenuBackdrop" onclick="closeSideMenu()" style="position:absolute; inset:0; background:rgba(15, 23, 42, 0.4); backdrop-filter:blur(3px);"></div>
-        <aside id="sideMenuPanel" style="position:relative; width:320px; height:100%; background:var(--bg-card); box-shadow:-5px 0 25px rgba(0,0,0,0.1); display:flex; flex-direction:column; padding:2rem;">
+        <aside id="sideMenuPanel" style="position:relative; width:320px; height:100%; max-height:100vh; overflow-y:auto; background:var(--bg-card); box-shadow:-5px 0 25px rgba(0,0,0,0.1); display:flex; flex-direction:column; padding:2rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2.5rem;">
                 <h3 style="font-size:1.25rem; font-weight:700; color:var(--text-main); margin:0;">Menú</h3>
                 <button onclick="closeSideMenu()" style="background:var(--bg-main); border:none; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.2rem; color:var(--text-muted); transition:background 0.2s;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='var(--bg-main)'">✕</button>
             </div>
             
-            <div style="margin-bottom: 2rem;">
+            <div class="show-on-mobile" style="margin-bottom: 2rem;">
                 <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; letter-spacing: 0.05em;">Navegación</h4>
                 <a href="{% url 'index' %}" style="display:flex; justify-content:flex-start; align-items:center; gap:1rem; width:100%; padding:0.75rem 1rem; border:none; background:none; cursor:pointer; border-radius:0.5rem; transition:background 0.2s; color:var(--text-main); font-size:1rem; font-weight:500; text-decoration:none;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'">
                     <span>🏠</span> Inicio
@@ -459,7 +458,7 @@
                 <!-- Tipo de cuenta -->
                 <div style="margin-bottom:1.25rem;">
                     <label style="display:block; font-size:0.8rem; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.75rem;">Tipo de cuenta</label>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                    <div class="grid-cols-2-responsive" style="gap:0.75rem;">
                         <label id="rolePostulanteCard" onclick="selectRole('postulante')" style="cursor:pointer; border:2px solid #2563eb; border-radius:0.875rem; padding:1rem; text-align:center; background:var(--primary-light); transition:all 0.2s;">
                             <input type="radio" name="role" value="postulante" style="display:none;" checked>
                             <div style="font-size:1.5rem; margin-bottom:0.25rem;">👤</div>
