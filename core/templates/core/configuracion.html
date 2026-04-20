@@ -288,7 +288,96 @@
             </div>
         </div>
     </div>
+    <!-- ── ZONA DE PELIGRO ── -->
+    <div class="cfg-card" style="border-color: #ef4444; margin-top: 0.5rem;">
+        <h2 class="cfg-card-title" style="cursor: default; user-select: auto;">
+            <div class="cfg-card-title-left" style="color: #ef4444;">
+                <span>⚠️</span> Zona de Peligro
+            </div>
+        </h2>
+        <p style="color: var(--text-gray); font-size: 0.9rem; margin: 1rem 0 1.5rem;">
+            Esta acción es <strong style="color: #ef4444;">permanente e irreversible</strong>. Al eliminar tu cuenta, se borrarán todos tus datos, postulaciones, ofertas publicadas y ajustes de forma definitiva.
+        </p>
+        <button type="button" id="btnEliminarCuenta"
+            style="background: #ef4444; color: white; border: none; padding: 0.875rem 2rem; font-weight: 700; font-size: 1rem; border-radius: 0.5rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; transition: background 0.2s;"
+            onmouseover="this.style.background='#dc2626'"
+            onmouseout="this.style.background='#ef4444'"
+            onclick="abrirModalEliminar()">
+            🗑️ Eliminar mi cuenta
+        </button>
+    </div>
 
+</div>
+
+<!-- ── MODAL ELIMINAR CUENTA ── -->
+<div id="modal-delete"
+    style="display:none; position:fixed; inset:0; z-index:10001; align-items:center; justify-content:center;">
+    <div onclick="cerrarModalEliminar()"
+        style="position:absolute; inset:0; background:rgba(15,23,42,0.5); backdrop-filter:blur(3px);"></div>
+    <div id="modal-delete-panel"
+        style="position:relative; width:90%; max-width:440px; background:var(--bg-card); border-radius:1.5rem; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.35);">
+        <div style="padding:2rem;">
+
+            <!-- PASO 1: Contraseña -->
+            <div id="delete-step-1">
+                <div style="text-align:center; font-size:3rem; margin-bottom:1rem;">🗑️</div>
+                <h3 style="margin:0 0 0.5rem; font-size:1.25rem; font-weight:800; color:#ef4444; text-align:center;">Eliminar cuenta</h3>
+                <p style="margin:0 0 1.5rem; color:var(--text-gray); font-size:0.9rem; text-align:center;">
+                    Paso 1 de 2 — Para continuar, ingresa tu contraseña actual.
+                </p>
+                <div id="delete-error-1"
+                    style="display:none; background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; padding:0.75rem 1rem; border-radius:0.5rem; font-size:0.875rem; margin-bottom:1rem;"></div>
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dark); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem;">Contraseña</label>
+                    <input type="password" id="delete-password" placeholder="••••••••"
+                        style="width:100%; padding:0.875rem 1rem; border:1.5px solid var(--border-light); border-radius:0.75rem; font-size:0.95rem; outline:none; box-sizing:border-box; background:var(--bg-input); color:var(--text-dark);"
+                        onfocus="this.style.borderColor='#ef4444'"
+                        onblur="this.style.borderColor='var(--border-light)'"
+                        onkeydown="if(event.key==='Enter') submitDeleteStep1()">
+                </div>
+                <div style="display:flex; gap:1rem;">
+                    <button type="button" onclick="cerrarModalEliminar()"
+                        style="flex:1; padding:0.875rem; font-weight:700; border-radius:0.75rem; background:transparent; border:2px solid var(--border-light); color:var(--text-gray); cursor:pointer;">
+                        Cancelar
+                    </button>
+                    <button type="button" onclick="submitDeleteStep1()" id="btn-delete-step1"
+                        style="flex:1; padding:0.875rem; font-weight:700; border-radius:0.75rem; background:#ef4444; color:white; border:none; cursor:pointer; transition:background 0.2s;">
+                        Continuar →
+                    </button>
+                </div>
+            </div>
+
+            <!-- PASO 2: Código OTP -->
+            <div id="delete-step-2" style="display:none;">
+                <div style="text-align:center; font-size:3rem; margin-bottom:1rem;">📧</div>
+                <h3 style="margin:0 0 0.5rem; font-size:1.25rem; font-weight:800; color:#ef4444; text-align:center;">Revisa tu correo</h3>
+                <p style="margin:0 0 1.5rem; color:var(--text-gray); font-size:0.9rem; text-align:center;">
+                    Paso 2 de 2 — Hemos enviado un código de 6 dígitos a <strong id="delete-email-hint" style="color:var(--text-dark);"></strong>. Ingrésalo abajo para confirmar la eliminación.
+                </p>
+                <div id="delete-error-2"
+                    style="display:none; background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; padding:0.75rem 1rem; border-radius:0.5rem; font-size:0.875rem; margin-bottom:1rem;"></div>
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-dark); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.5rem;">Código de verificación</label>
+                    <input type="text" id="delete-otp" placeholder="123456" maxlength="6"
+                        style="width:100%; padding:0.875rem 1rem; border:1.5px solid var(--border-light); border-radius:0.75rem; font-size:1.5rem; letter-spacing:0.5rem; text-align:center; outline:none; box-sizing:border-box; background:var(--bg-input); color:var(--text-dark);"
+                        onfocus="this.style.borderColor='#ef4444'"
+                        onblur="this.style.borderColor='var(--border-light)'"
+                        onkeydown="if(event.key==='Enter') submitDeleteStep2()">
+                </div>
+                <div style="display:flex; gap:1rem;">
+                    <button type="button" onclick="volverDeleteStep1()"
+                        style="flex:1; padding:0.875rem; font-weight:700; border-radius:0.75rem; background:transparent; border:2px solid var(--border-light); color:var(--text-gray); cursor:pointer;">
+                        ← Atrás
+                    </button>
+                    <button type="button" onclick="submitDeleteStep2()" id="btn-delete-step2"
+                        style="flex:1; padding:0.875rem; font-weight:700; border-radius:0.75rem; background:#ef4444; color:white; border:none; cursor:pointer;">
+                        🗑️ Eliminar definitivamente
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
 </div>
 
 <!-- ── MODAL FLOTANTE 2FA ── -->
@@ -347,6 +436,10 @@
     .modal-closing #modal-2fa-panel {
         animation: authFadeOut 0.28s ease-in-out forwards !important;
     }
+
+    #modal-delete-panel {
+        animation: authFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
 </style>
 
 <script>
@@ -400,6 +493,118 @@
         checkbox2fa.checked = !isChecked;
 
         document.getElementById('form-2fa').submit();
+    }
+
+    // ── Eliminar Cuenta ──
+
+    function abrirModalEliminar() {
+        document.getElementById('delete-step-1').style.display = 'block';
+        document.getElementById('delete-step-2').style.display = 'none';
+        document.getElementById('delete-password').value = '';
+        document.getElementById('delete-otp').value = '';
+        document.getElementById('delete-error-1').style.display = 'none';
+        document.getElementById('delete-error-2').style.display = 'none';
+        const modal = document.getElementById('modal-delete');
+        modal.style.display = 'flex';
+        setTimeout(() => document.getElementById('delete-password').focus(), 100);
+    }
+
+    function cerrarModalEliminar() {
+        document.getElementById('modal-delete').style.display = 'none';
+    }
+
+    function volverDeleteStep1() {
+        document.getElementById('delete-step-2').style.display = 'none';
+        document.getElementById('delete-step-1').style.display = 'block';
+        document.getElementById('delete-error-1').style.display = 'none';
+    }
+
+    async function submitDeleteStep1() {
+        const btn = document.getElementById('btn-delete-step1');
+        const password = document.getElementById('delete-password').value;
+        const errDiv = document.getElementById('delete-error-1');
+
+        if (!password) {
+            errDiv.textContent = 'Debes ingresar tu contraseña.';
+            errDiv.style.display = 'block';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Verificando...';
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        try {
+            const res = await fetch('/ajax/eliminar/solicitar/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
+                body: `password=${encodeURIComponent(password)}`
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                // Mostrar correo parcialmente enmascarado (obtenido del DOM si existe)
+                const emailHint = document.getElementById('delete-email-hint');
+                if (emailHint) {
+                    const emailFull = '{{ request.user.email }}';
+                    const parts = emailFull.split('@');
+                    const masked = parts[0].substring(0, 3) + '***@' + parts[1];
+                    emailHint.textContent = masked;
+                }
+                document.getElementById('delete-step-1').style.display = 'none';
+                document.getElementById('delete-step-2').style.display = 'block';
+                setTimeout(() => document.getElementById('delete-otp').focus(), 100);
+            } else {
+                errDiv.textContent = data.error || 'Error desconocido.';
+                errDiv.style.display = 'block';
+            }
+        } catch (e) {
+            errDiv.textContent = 'Error de conexión. Inténtalo de nuevo.';
+            errDiv.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Continuar →';
+        }
+    }
+
+    async function submitDeleteStep2() {
+        const btn = document.getElementById('btn-delete-step2');
+        const codigo = document.getElementById('delete-otp').value.trim();
+        const errDiv = document.getElementById('delete-error-2');
+
+        if (!codigo || codigo.length !== 6) {
+            errDiv.textContent = 'Ingresa el código de 6 dígitos.';
+            errDiv.style.display = 'block';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Procesando...';
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        try {
+            const res = await fetch('/ajax/eliminar/verificar/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
+                body: `codigo=${encodeURIComponent(codigo)}`
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                // Redirigir al inicio
+                window.location.href = data.redirect || '/';
+            } else {
+                errDiv.textContent = data.error || 'Código inválido.';
+                errDiv.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = '🗑️ Eliminar definitivamente';
+            }
+        } catch (e) {
+            errDiv.textContent = 'Error de conexión. Inténtalo de nuevo.';
+            errDiv.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = '🗑️ Eliminar definitivamente';
+        }
     }
 </script>
 

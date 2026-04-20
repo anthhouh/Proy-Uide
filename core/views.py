@@ -995,3 +995,85 @@ def error_403(request, exception=None):
     """Página 403 personalizada con ventana flotante."""
     from django.shortcuts import render as _render
     return _render(request, '403.html', status=403)
+
+
+# ── Eliminación de Cuenta ──
+
+@login_required
+@require_POST
+def ajax_solicitar_eliminacion(request):
+    """Paso 1: verificar contraseña y enviar OTP al correo para eliminar la cuenta."""
+    password = request.POST.get('password', '')
+    
+    if not request.user.check_password(password):
+        return JsonResponse({'ok': False, 'error': 'La contraseña ingresada es incorrecta.'})
+    
+    # Generar OTP de 6 dígitos
+    codigo = str(random.randint(100000, 999999))
+    
+    # Guardar en sesión con timestamp
+    request.session['delete_account_otp'] = {
+        'codigo': codigo,
+        'timestamp': timezone.now().timestamp(),
+        'user_id': request.user.id,
+    }
+    
+    # Imprimir en consola para pruebas locales
+    print(f"\n========== CÓDIGO ELIMINACIÓN DE CUENTA ==========")
+    print(f"Usuario: {request.user.username} ({request.user.email})")
+    print(f"Código OTP: {codigo}")
+    print(f"==================================================\n")
+    
+    # Enviar por correo
+    try:
+        send_mail(
+            '⚠️ Código de verificación para eliminar tu cuenta',
+            (
+                f'Hola {request.user.username},\n\n'
+                f'Recibimos una solicitud para eliminar permanentemente tu cuenta.\n\n'
+                f'Tu código de verificación es: {codigo}\n\n'
+                f'Este código expirará en 10 minutos.\n\n'
+                f'Si no realizaste esta solicitud, ignora este mensaje y cambia tu contraseña inmediatamente.\n\n'
+                f'Saludos,\nEl equipo'
+            ),
+            None,
+            [request.user.email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': f'Error al enviar el correo: {str(e)[:120]}'})
+    
+    return JsonResponse({'ok': True})
+
+
+@login_required
+@require_POST
+def ajax_verificar_eliminacion(request):
+    """Paso 2: verificar el OTP y eliminar la cuenta definitivamente."""
+    codigo_ingresado = request.POST.get('codigo', '').strip()
+    
+    otp_data = request.session.get('delete_account_otp')
+    
+    if not otp_data:
+        return JsonResponse({'ok': False, 'error': 'No hay una solicitud de eliminación activa. Vuelve a intentarlo.'})
+    
+    # Verificar que el OTP pertenece al usuario actual
+    if otp_data.get('user_id') != request.user.id:
+        return JsonResponse({'ok': False, 'error': 'Sesión inválida.'})
+    
+    # Verificar expiración (10 minutos)
+    tiempo_transcurrido = timezone.now().timestamp() - otp_data.get('timestamp', 0)
+    if tiempo_transcurrido > 600:
+        del request.session['delete_account_otp']
+        return JsonResponse({'ok': False, 'error': 'El código ha expirado. Por favor, solicita uno nuevo.'})
+    
+    # Verificar el código
+    if codigo_ingresado != otp_data.get('codigo'):
+        return JsonResponse({'ok': False, 'error': 'Código incorrecto. Inténtalo de nuevo.'})
+    
+    # Todo correcto: eliminar la cuenta
+    user = request.user
+    auth_logout(request)
+    user.delete()
+    
+    return JsonResponse({'ok': True, 'redirect': '/'})

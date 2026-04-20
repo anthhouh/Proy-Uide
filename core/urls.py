@@ -35,4 +35,6 @@ urlpatterns = [
     path('ajax/reset/solicitar/', views.ajax_solicitar_reset, name='ajax_solicitar_reset'),
     path('ajax/reset/verificar/', views.ajax_verificar_reset, name='ajax_verificar_reset'),
     path('ajax/reset/cambiar/', views.ajax_cambiar_password, name='ajax_cambiar_password'),
+    path('ajax/eliminar/solicitar/', views.ajax_solicitar_eliminacion, name='ajax_solicitar_eliminacion'),
+    path('ajax/eliminar/verificar/', views.ajax_verificar_eliminacion, name='ajax_verificar_eliminacion'),
 ]
