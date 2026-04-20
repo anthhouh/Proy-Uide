@@ -227,6 +227,34 @@
     .alert-success { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; }
     .alert-error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #f87171; }
 
+    /* Estilos responsivos para móvil */
+    @media (max-width: 992px) {
+        .dashboard-layout {
+            padding: 1rem;
+        }
+        .header-area {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+        .logo-upload-container {
+            flex-direction: column;
+            align-items: center;
+        }
+        .logo-right-fields {
+            grid-template-columns: 1fr;
+            width: 100%;
+        }
+        .form-grid-inner {
+            grid-template-columns: 1fr;
+        }
+        .social-links {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
 <div class="dashboard-layout">
