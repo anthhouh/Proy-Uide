@@ -627,9 +627,7 @@
                                     {% else %}
                                     <div class="reviewer-avatar"
                                         style="background: hsl({{ forloop.counter|add:200 }}, 55%, 55%);">
-                                        {{
-                                        resena.autor.nombre_visualizacion|default:resena.autor.user.username|make_list|first|upper
-                                        }}
+                                        {{ resena.autor.nombre_visualizacion|default:resena.autor.user.username|make_list|first|upper }}
                                     </div>
                                     {% endif %}
                                 </a>
