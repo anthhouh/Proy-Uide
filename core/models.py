@@ -30,6 +30,15 @@ class Profile(models.Model):
     social_instagram = models.CharField(max_length=255, blank=True)
     social_twitter = models.CharField(max_length=255, blank=True)
 
+    def save(self, *args, **kwargs):
+        # Asegurar que el logo y nombre subidos se plasmen globalmente como identidad de perfil
+        if self.role == 'empresa':
+            if self.empresa_logo:
+                self.foto_perfil = self.empresa_logo
+            if self.empresa_nombre:
+                self.nombre_visualizacion = self.empresa_nombre
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Perfil de {self.user.username} ({self.role})"
 
@@ -97,6 +106,7 @@ class Oferta(models.Model):
     ubicacion = models.CharField(max_length=255, blank=True)
     ubicacion_mapa_url = models.URLField(blank=True, verbose_name="Enlace Google Maps de la ubicación")
     sueldo = models.CharField(max_length=100, blank=True, verbose_name="Sueldo (opcional)")
+    max_postulantes = models.PositiveIntegerField(null=True, blank=True, verbose_name="Límite máximo de postulantes", help_text="Deja en blanco para no tener límite")
     etiqueta = models.CharField(
         max_length=50,
         choices=ETIQUETA_CHOICES,

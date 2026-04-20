@@ -23,6 +23,7 @@ urlpatterns = [
     path('oferta/editar/<int:oferta_id>/', views.editar_oferta, name='editar_oferta'),
     path('oferta/eliminar/<int:oferta_id>/', views.eliminar_oferta, name='eliminar_oferta'),
     path('oferta/aplicar/<int:oferta_id>/', views.aplicar_oferta, name='aplicar_oferta'),
+    path('oferta/retirar/<int:oferta_id>/', views.retirar_postulacion, name='retirar_postulacion'),
     path('oferta/<int:oferta_id>/', views.detalle_oferta, name='detalle_oferta'),
     path('api/candidato/estado/', views.actualizar_estado_candidato, name='actualizar_estado_candidato'),
     path('perfil/<int:profile_id>/resena/', views.crear_resena, name='crear_resena'),

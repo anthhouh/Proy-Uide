@@ -61,7 +61,7 @@ class EmpresaProfileEditForm(forms.ModelForm):
 class OfertaForm(forms.ModelForm):
     class Meta:
         model = Oferta
-        fields = ['titulo', 'descripcion', 'modalidad', 'tipo_contrato', 'ubicacion', 'ubicacion_mapa_url', 'sueldo', 'etiqueta', 'estado']
+        fields = ['titulo', 'descripcion', 'modalidad', 'tipo_contrato', 'ubicacion', 'ubicacion_mapa_url', 'sueldo', 'max_postulantes', 'etiqueta', 'estado']
         widgets = {
             'titulo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Desarrollador Backend Junior'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Describe los requisitos y responsabilidades de la vacante...'}),
@@ -71,5 +71,6 @@ class OfertaForm(forms.ModelForm):
             'ubicacion_mapa_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://maps.google.com/... (enlace de Google Maps)'}),
             'sueldo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. $800 - $1200, a convenir...'}),
             'etiqueta': forms.Select(attrs={'class': 'form-control'}),
+            'max_postulantes': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 10 (Dejar en blanco para ilimitado)'}),
             'estado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

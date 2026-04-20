@@ -563,7 +563,7 @@ body { background: var(--jd-bg); }
                     <li>
                         <div class="jd-action-icon">👥</div>
                         <div><div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--jd-text-muted); font-weight:700;">Postulantes</div>
-                        <strong>{{ oferta.aplicaciones.count }} aplicantes</strong></div>
+                        <strong>{{ oferta.aplicaciones.count }} {% if oferta.max_postulantes %}/ {{ oferta.max_postulantes }} aplicantes{% else %}aplicantes (Sin cantidad de postulantes máximos){% endif %}</strong></div>
                     </li>
                 </ul>
 
@@ -571,7 +571,12 @@ body { background: var(--jd-bg); }
                 {% if request.user.is_authenticated %}
                     {% if user_profile.role == 'postulante' %}
                         {% if ya_postulo %}
-                            <div class="jd-btn-applied">✅ Ya te postulaste</div>
+                            <div class="jd-btn-applied" {% if puede_retirar %}style="margin-bottom:0.5rem;"{% endif %}>✅ Ya te postulaste</div>
+                            {% if puede_retirar %}
+                            <button onclick="retirarPostulacion({{ oferta.id }})" class="jd-btn-login" style="margin-top:0.5rem; background:rgba(239,68,68,0.1); color:#ef4444; border-color:#ef4444; margin-bottom:0;">🗑️ Retirar Postulación</button>
+                            {% endif %}
+                        {% elif limite_alcanzado %}
+                            <div class="jd-btn-applied" style="background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1;">🔒 Límite de aplicantes lleno</div>
                         {% else %}
                             <a href="{% url 'aplicar_oferta' oferta.id %}?next={% url 'detalle_oferta' oferta.id %}" class="jd-btn-apply">
                                 🚀 Postular Ahora
@@ -588,9 +593,13 @@ body { background: var(--jd-bg); }
                         </div>
                     {% endif %}
                 {% else %}
+                    {% if limite_alcanzado %}
+                    <div class="jd-btn-applied" style="background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1; margin-bottom:0.5rem;">🔒 Límite de aplicantes lleno</div>
+                    {% else %}
                     <button onclick="openAuthModal('login')" class="jd-btn-login" style="cursor:pointer; border:2px solid var(--jd-primary); width:100%;">
                         🔐 Iniciar sesión para postular
                     </button>
+                    {% endif %}
                     <button onclick="openAuthModal('registro')" style="display:block; width:100%; text-align:center; font-size:0.85rem; color:var(--jd-text-muted); text-decoration:none; margin-top:0.5rem; font-weight:500; background:none; border:none; cursor:pointer;">
                         ¿No tienes cuenta? <span style="color:var(--jd-primary); font-weight:700;">Regístrate gratis →</span>
                     </button>
@@ -641,6 +650,28 @@ async function guardarOferta(btn, ofertaId) {
         console.error(err);
     } finally {
         btn.disabled = false;
+    }
+}
+
+async function retirarPostulacion(ofertaId) {
+    if(!confirm("¿Estás seguro de que deseas retirar tu postulación a esta oferta?")) return;
+    try {
+        const csrfToken = document.querySelector('#csrf-form input').value;
+        const res = await fetch(`/oferta/retirar/${ofertaId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        const data = await res.json();
+        if(data.status === 'retirado') {
+            window.location.reload();
+        } else {
+            alert(data.message || 'Ocurrió un error al retirar la postulación.');
+        }
+    } catch(err) {
+        console.error("Error:", err);
     }
 }
 </script>

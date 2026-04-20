@@ -325,8 +325,13 @@
             </div>
             <h3 class="job-title">{{ app.oferta.titulo }}</h3>
             <div class="job-company" style="font-weight: 600;">{{ app.oferta.empresa.empresa_nombre }}</div>
-            <div class="job-details" style="flex-wrap: wrap;">
+            <div class="job-details" style="flex-wrap: wrap; justify-content: space-between; align-items: center; width: 100%;">
                 <span style="color: #059669; font-weight: 600;">✅ Postulado el {{ app.fecha_postulacion|date:"d M" }}</span>
+                {% if app.puede_retirar %}
+                <button onclick="retirarPostulacion({{ app.oferta.id }}, this)" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.05); transition: background 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='rgba(239,68,68,0.05)'" title="Retirar postulación">
+                    🗑️ Retirar
+                </button>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -356,7 +361,11 @@
                     {% endif %}
                 </div>
                 <div style="display:flex; align-items:center; gap:0.5rem;">
+                    {% if oferta.max_postulantes and oferta.aplicaciones.count >= oferta.max_postulantes %}
+                    <span class="badge" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; font-size: 0.75rem;">⛔ LLENA</span>
+                    {% else %}
                     <span class="badge badge-green" style="font-size: 0.75rem;">NUEVA</span>
+                    {% endif %}
                     {% if request.user.is_authenticated and request.user.profile.role == 'postulante' %}
                     <div class="job-options-menu">
                         <button class="job-options-btn" onclick="toggleJobMenu(event, {{ oferta.id }})" style="font-weight: bold; letter-spacing: 1px;">⋯</button>
@@ -378,6 +387,7 @@
             <div class="job-details" style="flex-wrap: wrap;">
                 <span>📍 {{ oferta.ubicacion|default:"No especificada" }}</span>
                 <span>💼 {{ oferta.get_modalidad_display }}</span>
+                <span>👥 {{ oferta.aplicaciones.count }}{% if oferta.max_postulantes %}/{{ oferta.max_postulantes }}{% else %} (Sin cantidad de postulantes máximos){% endif %}</span>
                 <span style="background:rgba(124,58,237,0.15); color:#a78bfa; padding:0.2rem 0.6rem; border-radius:999px; font-size:0.75rem; font-weight:600;">🏷️ {{ oferta.get_etiqueta_display }}</span>
                 {% if oferta.sueldo %}
                     <span style="color: var(--primary-color); font-weight: 600;">💵 {{ oferta.sueldo }}</span>
@@ -538,6 +548,40 @@ async function descartarOferta(btn, ofertaId) {
     } catch(err) {
         console.error(err);
         btn.disabled = false;
+    }
+}
+
+async function retirarPostulacion(ofertaId, btn) {
+    if(!confirm("¿Estás seguro de que deseas retirar tu postulación a esta oferta?")) return;
+    if(btn) btn.disabled = true;
+    try {
+        const csrfToken = document.querySelector('#csrf-form input').value;
+        const res = await fetch(`/oferta/retirar/${ofertaId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        const data = await res.json();
+        if(data.status === 'retirado') {
+            // Eliminar la tarjeta de la vista
+            const card = btn ? btn.closest('.job-card') : null;
+            if(card) {
+                card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => card.remove(), 300);
+            } else {
+                window.location.reload();
+            }
+        } else {
+            alert(data.message || 'Ocurrió un error al retirar la postulación.');
+            if(btn) btn.disabled = false;
+        }
+    } catch(err) {
+        console.error("Error:", err);
+        if(btn) btn.disabled = false;
     }
 }
 </script>

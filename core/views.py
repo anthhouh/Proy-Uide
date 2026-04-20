@@ -80,9 +80,15 @@ def index(request):
     postulaciones_ids = []
     guardadas_ids = []
     if user_profile and user_profile.role == 'postulante':
-        mis_postulaciones = Postulacion.objects.filter(postulante=user_profile).select_related('oferta', 'oferta__empresa').order_by('-fecha_postulacion')
-        postulaciones_ids = list(mis_postulaciones.values_list('oferta_id', flat=True))
+        qs_post = Postulacion.objects.filter(postulante=user_profile).select_related('oferta', 'oferta__empresa').order_by('-fecha_postulacion')
+        mis_postulaciones = list(qs_post)
+        postulaciones_ids = [p.oferta_id for p in mis_postulaciones]
         guardadas_ids = list(EmpleoGuardado.objects.filter(postulante=user_profile).values_list('oferta_id', flat=True))
+        clasificaciones = ClasificacionCandidato.objects.filter(postulante=user_profile)
+        clasif_dict = {c.empresa_id: c.estado for c in clasificaciones}
+        for app in mis_postulaciones:
+            estado = clasif_dict.get(app.oferta.empresa_id, 'pendiente')
+            app.puede_retirar = (estado == 'pendiente')
 
     return render(request, 'core/index.html', {
         'ofertas': ofertas,
@@ -276,7 +282,8 @@ def ajax_registro(request):
     else:
         # Si no requiere verificación, creamos directo el usuario oficial
         user = User.objects.create_user(username=username, email=email, password=password)
-        Profile.objects.create(user=user, role=role, nombre_visualizacion=nombre)
+        emp_name = nombre if role == 'empresa' else ''
+        Profile.objects.create(user=user, role=role, nombre_visualizacion=nombre, empresa_nombre=emp_name)
         auth_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         return JsonResponse({'ok': True, 'redirect': '/'})
 
@@ -307,10 +314,12 @@ def ajax_verificar_codigo(request):
         email=pendiente['email'], 
         password=pendiente['password']
     )
+    emp_name_2 = pendiente['nombre'] if pendiente['role'] == 'empresa' else ''
     Profile.objects.create(
         user=user, 
         role=pendiente['role'], 
-        nombre_visualizacion=pendiente['nombre']
+        nombre_visualizacion=pendiente['nombre'],
+        empresa_nombre=emp_name_2
     )
     
     # Limpiar sesión temporal y loguear
@@ -898,6 +907,11 @@ def aplicar_oferta(request, oferta_id):
         return redirect('index')
         
     oferta = get_object_or_404(Oferta, id=oferta_id)
+    
+    if oferta.max_postulantes is not None and oferta.aplicaciones.count() >= oferta.max_postulantes:
+        messages.error(request, 'No puedes aplicar. Esta oferta ha alcanzado el límite máximo de postulantes permitidos.')
+        return redirect('detalle_oferta', oferta_id=oferta.id)
+
     postulacion, created = Postulacion.objects.get_or_create(postulante=request.user.profile, oferta=oferta)
     
     if created:
@@ -917,19 +931,49 @@ def detalle_oferta(request, oferta_id):
     
     ya_postulo = False
     guardada = False
+    puede_retirar = False
     user_profile = getattr(request.user, 'profile', None) if request.user.is_authenticated else None
     if user_profile and user_profile.role == 'postulante':
         ya_postulo = Postulacion.objects.filter(postulante=user_profile, oferta=oferta).exists()
         guardada = EmpleoGuardado.objects.filter(postulante=user_profile, oferta=oferta).exists()
+        if ya_postulo:
+            clasif = ClasificacionCandidato.objects.filter(empresa=oferta.empresa, postulante=user_profile).first()
+            if not clasif or clasif.estado == 'pendiente':
+                puede_retirar = True
+                
+    limite_alcanzado = False
+    if oferta.max_postulantes is not None and oferta.aplicaciones.count() >= oferta.max_postulantes:
+        limite_alcanzado = True
     
     return render(request, 'core/detalle_oferta.html', {
         'oferta': oferta,
         'fotos': fotos,
         'ya_postulo': ya_postulo,
+        'puede_retirar': puede_retirar,
         'guardada': guardada,
+        'limite_alcanzado': limite_alcanzado,
         'user_profile': user_profile,
     })
 
+
+@login_required
+@require_POST
+def retirar_postulacion(request, oferta_id):
+    if request.user.profile.role != 'postulante':
+        return JsonResponse({'status': 'error', 'message': 'Acción no permitida.'}, status=403)
+        
+    oferta = get_object_or_404(Oferta, id=oferta_id)
+    postulacion = Postulacion.objects.filter(postulante=request.user.profile, oferta=oferta).first()
+    
+    if not postulacion:
+        return JsonResponse({'status': 'error', 'message': 'No has postulado a esta oferta.'}, status=400)
+        
+    clasificacion = ClasificacionCandidato.objects.filter(empresa=oferta.empresa, postulante=request.user.profile).first()
+    if clasificacion and clasificacion.estado != 'pendiente':
+        return JsonResponse({'status': 'error', 'message': 'No puedes retirar tu postulación porque la empresa ya evaluó tu perfil.'}, status=400)
+    
+    postulacion.delete()
+    return JsonResponse({'status': 'retirado'})
 
 # ── Manejadores de errores HTTP personalizados ──
 def error_404(request, exception=None):

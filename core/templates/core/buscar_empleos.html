@@ -399,7 +399,11 @@ body {
                     <div class="job-h-title" style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
                         <div style="display:flex; align-items:center; gap:0.75rem;">
                             <h3>{{ oferta.titulo }}</h3>
+                            {% if oferta.max_postulantes and oferta.aplicaciones.count >= oferta.max_postulantes %}
+                            <span class="badge" style="background:#fef2f2; color:#ef4444; border:1px solid #fca5a5; font-size:0.625rem; font-weight:700;">⛔ LLENA</span>
+                            {% else %}
                             <span class="badge badge-green" style="font-size:0.625rem; font-weight:700;">NUEVO</span>
+                            {% endif %}
                         </div>
                         {% if request.user.is_authenticated and request.user.profile.role == 'postulante' %}
                         <div class="job-options-menu">
@@ -425,7 +429,7 @@ body {
                         <span class="job-badge badge-action">⚡ Postulación rápida</span>
                     </div>
                     <div class="job-h-candidates">
-                        <span style="font-weight:600; color:var(--primary-color)">{{ oferta.aplicaciones.count }}</span> &nbsp;candidatos ya aplicaron
+                        <span style="font-weight:600; color:var(--primary-color)">{{ oferta.aplicaciones.count }}{% if oferta.max_postulantes %}/{{ oferta.max_postulantes }}{% endif %}</span> &nbsp;candidatos ya aplicaron{% if not oferta.max_postulantes %} (Sin cantidad de postulantes máximos){% endif %}
                     </div>
                 </div>
                 <div class="job-h-right">
