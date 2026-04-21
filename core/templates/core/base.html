@@ -58,7 +58,7 @@
                             <span id="notif-badge" style="display:none; position:absolute; top:2px; right:2px; background:#ef4444; color:white; font-size:0.65rem; font-weight:800; min-width:17px; height:17px; border-radius:50%; display:flex; align-items:center; justify-content:center; line-height:1; border:2px solid var(--bg-card);">0</span>
                         </button>
                         <!-- Panel de notificaciones -->
-                        <div id="notif-panel" class="notif-dropdown" style="display:none;">
+                        <div id="notif-panel" class="notif-dropdown">
                             <div style="padding:1rem 1.25rem 0.75rem; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between;">
                                 <div style="font-weight:800; font-size:1rem; color:var(--text-main);">🔔 Notificaciones</div>
                                 <button onclick="marcarTodasLeidas()" style="background:none; border:none; cursor:pointer; font-size:0.8rem; color:var(--text-muted); font-weight:600; padding:0.25rem 0.5rem; border-radius:0.5rem; transition:background 0.2s;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'">Marcar todas como leídas</button>
@@ -291,6 +291,17 @@
         box-shadow: 0 20px 50px rgba(0,0,0,0.18);
         z-index: 9998;
         overflow: hidden;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+    }
+    .notif-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: all;
     }
     @media (max-width: 768px) {
         .notif-dropdown {
@@ -1108,7 +1119,7 @@ async function irALink(link, id) {
         body: JSON.stringify({id: id})
     });
     if (link) window.location.href = link;
-    else { const p = document.getElementById('notif-panel'); if(p) p.style.display='none'; notifPanelOpen=false; }
+    else { const p = document.getElementById('notif-panel'); if(p) p.classList.remove('show'); notifPanelOpen=false; }
 }
 
 async function marcarTodasLeidas() {
@@ -1126,15 +1137,19 @@ function toggleNotifPanel(e) {
     const panel = document.getElementById('notif-panel');
     if (!panel) return;
     notifPanelOpen = !notifPanelOpen;
-    panel.style.display = notifPanelOpen ? 'block' : 'none';
-    if (notifPanelOpen) cargarNotificaciones();
+    if (notifPanelOpen) {
+        panel.classList.add('show');
+        cargarNotificaciones();
+    } else {
+        panel.classList.remove('show');
+    }
 }
 
 document.addEventListener('click', function(e) {
     const wrapper = document.getElementById('notif-wrapper');
     if (wrapper && !wrapper.contains(e.target)) {
         const p = document.getElementById('notif-panel');
-        if (p) p.style.display = 'none';
+        if (p) p.classList.remove('show');
         notifPanelOpen = false;
     }
 });
