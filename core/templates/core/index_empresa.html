@@ -179,9 +179,17 @@
 </style>
 
 <div class="kanban-wrapper">
-    <div class="kanban-header">
-        <h1 class="kanban-title">Clasificación de Candidatos</h1>
-        <p class="kanban-subtitle">Arrastra y suelta a los postulantes en las diferentes columnas para organizar tu proceso de selección.</p>
+    <div class="kanban-header" style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+        <div>
+            <h1 class="kanban-title">Clasificación de Candidatos</h1>
+            <p class="kanban-subtitle">Arrastra y suelta a los postulantes en las diferentes columnas para organizar tu proceso de selección.</p>
+        </div>
+        <button id="btnEnviarResultados" onclick="enviarResultados()"
+            style="background: linear-gradient(135deg, #2563eb, #7c3aed); color:white; border:none; padding:0.75rem 1.5rem; font-weight:700; font-size:0.95rem; border-radius:0.75rem; cursor:pointer; display:flex; align-items:center; gap:0.5rem; box-shadow:0 4px 14px rgba(37,99,235,0.35); transition:all 0.2s; white-space:nowrap;"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(37,99,235,0.45)'"
+            onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 14px rgba(37,99,235,0.35)'">
+            📤 Enviar Resultados
+        </button>
     </div>
 
     <div class="kanban-board">
@@ -393,5 +401,170 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ── Enviar Resultados ──────────────────────────────────────
+function enviarResultados() {
+    const clasificados = document.querySelectorAll('.kanban-column:not([data-status="pendiente"]) .kanban-card');
+    const btn = document.getElementById('btnEnviarResultados');
+    const original = btn.innerHTML;
+
+    if (clasificados.length === 0) {
+        // Feedback de error en el botón
+        btn.style.background = 'linear-gradient(135deg,#f59e0b,#d97706)';
+        btn.innerHTML = '⚠️ Sin candidatos clasificados';
+        setTimeout(() => {
+            btn.style.background = 'linear-gradient(135deg,#2563eb,#7c3aed)';
+            btn.innerHTML = original;
+        }, 2500);
+        return;
+    }
+
+    // Actualizar texto del modal dinámicamente
+    const totalSpan = document.getElementById('modal-total-candidatos');
+    if (totalSpan) totalSpan.textContent = clasificados.length;
+
+    // Mostrar modal
+    const modal = document.getElementById('modal-enviar-resultados');
+    modal.style.display = 'flex';
+    void modal.offsetWidth; // reflow
+    modal.classList.add('modal-visible');
+}
+
+function cerrarModalEnviar() {
+    const modal = document.getElementById('modal-enviar-resultados');
+    modal.classList.remove('modal-visible');
+    modal.classList.add('modal-closing');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        modal.classList.remove('modal-closing');
+    }, 320);
+}
+
+async function confirmarEnviarResultados() {
+    const btn = document.getElementById('btnEnviarResultados');
+    const btnConfirm = document.getElementById('btnConfirmarEnvio');
+    const original = btn.innerHTML;
+
+    cerrarModalEnviar();
+
+    btn.disabled = true;
+    btn.style.background = 'linear-gradient(135deg,#6366f1,#7c3aed)';
+    btn.innerHTML = '<span style="display:flex;align-items:center;gap:0.5rem;"><svg style="width:18px;height:18px;animation:spin 1s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Enviando...</span>';
+
+    try {
+        const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const res = await fetch('/ajax/kanban/enviar-resultados/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrf, 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+        const data = await res.json();
+        if (data.ok) {
+            btn.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+            btn.innerHTML = `✅ ${data.enviadas} enviada(s)`;
+            setTimeout(() => location.reload(), 2200);
+        } else {
+            btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+            btn.innerHTML = '❌ Error al enviar';
+            setTimeout(() => { btn.style.background = 'linear-gradient(135deg,#2563eb,#7c3aed)'; btn.innerHTML = original; btn.disabled = false; }, 2500);
+        }
+    } catch(e) {
+        btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+        btn.innerHTML = '❌ Error de conexión';
+        setTimeout(() => { btn.style.background = 'linear-gradient(135deg,#2563eb,#7c3aed)'; btn.innerHTML = original; btn.disabled = false; }, 2500);
+    }
+}
+
+// Cerrar modal con Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const m = document.getElementById('modal-enviar-resultados');
+        if (m && m.style.display === 'flex') cerrarModalEnviar();
+    }
+});
 </script>
+
+<!-- ── MODAL CONFIRMAR ENVÍO DE RESULTADOS ── -->
+<style>
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes modalPanelIn {
+    from { opacity:0; transform: translateY(24px) scale(0.96); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+}
+@keyframes modalPanelOut {
+    from { opacity:1; transform: translateY(0) scale(1); }
+    to   { opacity:0; transform: translateY(14px) scale(0.97); }
+}
+@keyframes backdropAppear { from{opacity:0} to{opacity:1} }
+@keyframes backdropHide   { from{opacity:1} to{opacity:0} }
+
+#modal-enviar-resultados { transition: none; }
+#modal-enviar-resultados .modal-backdrop  { animation: backdropAppear 0.28s ease both; }
+#modal-enviar-resultados .modal-panel     { animation: modalPanelIn 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+#modal-enviar-resultados.modal-closing .modal-backdrop { animation: backdropHide 0.28s ease forwards !important; }
+#modal-enviar-resultados.modal-closing .modal-panel    { animation: modalPanelOut 0.28s ease-in forwards !important; }
+
+.modal-confirm-list li {
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem; line-height: 1.45;
+}
+</style>
+
+<div id="modal-enviar-resultados"
+    style="display:none; position:fixed; inset:0; z-index:10002; align-items:center; justify-content:center; padding:1rem;">
+    <!-- Backdrop -->
+    <div class="modal-backdrop" onclick="cerrarModalEnviar()"
+        style="position:absolute; inset:0; background:rgba(15,23,42,0.55); backdrop-filter:blur(6px);"></div>
+
+    <!-- Panel -->
+    <div class="modal-panel"
+        style="position:relative; width:100%; max-width:460px; background:var(--bg-card); border-radius:1.5rem; overflow:hidden; box-shadow:0 30px 60px -12px rgba(0,0,0,0.35);">
+
+        <!-- Banda decorativa superior -->
+        <div style="height:5px; background:linear-gradient(90deg,#2563eb,#7c3aed,#ec4899);"></div>
+
+        <div style="padding:2rem 2rem 1.5rem;">
+            <!-- Ícono animado -->
+            <div style="text-align:center; margin-bottom:1.25rem;">
+                <div style="display:inline-flex; align-items:center; justify-content:center; width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,rgba(37,99,235,0.12),rgba(124,58,237,0.12)); border:2px solid rgba(37,99,235,0.2);">
+                    <span style="font-size:2rem;">📤</span>
+                </div>
+            </div>
+
+            <!-- Título -->
+            <h3 style="margin:0 0 0.5rem; font-size:1.3rem; font-weight:800; color:var(--text-main); text-align:center;">
+                ¿Enviar resultados?
+            </h3>
+            <p style="margin:0 0 1.5rem; color:var(--text-muted); font-size:0.9rem; text-align:center; line-height:1.5;">
+                Se notificará a <strong id="modal-total-candidatos" style="color:var(--text-main);">0</strong> candidato(s) clasificado(s) sobre su estado en el proceso de selección.
+            </p>
+
+            <!-- Detalles -->
+            <div style="background:var(--bg-main); border-radius:0.875rem; padding:1rem 1.25rem; margin-bottom:1.5rem;">
+                <ul style="list-style:none; padding:0; margin:0;" class="modal-confirm-list">
+                    <li><span style="font-size:1rem;">📅</span><span><strong style="color:var(--text-main);">Entrevista Pendiente</strong> — Se les avisará del próximo paso.</span></li>
+                    <li><span style="font-size:1rem;">✅</span><span><strong style="color:var(--text-main);">Cumple Requisitos</strong> — Recibirán una notificación positiva.</span></li>
+                    <li><span style="font-size:1rem;">❌</span><span><strong style="color:#ef4444;">No Cumple</strong> — <span style="color:#ef4444; font-weight:600;">Su postulación será eliminada</span> y podrán volver a aplicar en <strong style="color:#ef4444;">15 días</strong>.</span></li>
+                </ul>
+            </div>
+
+            <!-- Botones -->
+            <div style="display:flex; gap:0.75rem;">
+                <button type="button" onclick="cerrarModalEnviar()"
+                    style="flex:1; padding:0.875rem; font-size:0.95rem; font-weight:700; border-radius:0.875rem; background:transparent; border:2px solid var(--border-color); color:var(--text-muted); cursor:pointer; transition:all 0.2s;"
+                    onmouseover="this.style.background='var(--bg-main)';this.style.color='var(--text-main)'"
+                    onmouseout="this.style.background='transparent';this.style.color='var(--text-muted)'">
+                    Cancelar
+                </button>
+                <button id="btnConfirmarEnvio" type="button" onclick="confirmarEnviarResultados()"
+                    style="flex:2; padding:0.875rem; font-size:0.95rem; font-weight:700; border-radius:0.875rem; background:linear-gradient(135deg,#2563eb,#7c3aed); color:white; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem; box-shadow:0 4px 14px rgba(37,99,235,0.3); transition:all 0.2s;"
+                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(37,99,235,0.45)'"
+                    onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 14px rgba(37,99,235,0.3)'">
+                    📤 Sí, enviar resultados
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

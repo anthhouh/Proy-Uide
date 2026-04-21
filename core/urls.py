@@ -37,4 +37,7 @@ urlpatterns = [
     path('ajax/reset/cambiar/', views.ajax_cambiar_password, name='ajax_cambiar_password'),
     path('ajax/eliminar/solicitar/', views.ajax_solicitar_eliminacion, name='ajax_solicitar_eliminacion'),
     path('ajax/eliminar/verificar/', views.ajax_verificar_eliminacion, name='ajax_verificar_eliminacion'),
+    path('ajax/kanban/enviar-resultados/', views.ajax_enviar_resultados_kanban, name='ajax_enviar_resultados_kanban'),
+    path('ajax/notificaciones/', views.ajax_notificaciones, name='ajax_notificaciones'),
+    path('ajax/notificaciones/marcar-leida/', views.ajax_marcar_notificaciones, name='ajax_marcar_notificaciones'),
 ]

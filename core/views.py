@@ -10,7 +10,8 @@ from django.core.mail import send_mail
 import json
 import random
 from django.utils import timezone
-from .models import Profile, Oferta, ClasificacionCandidato, Postulacion, Resena, OfertaFoto, ConfiguracionPlataforma, EmpleoGuardado, EmpleoDescartado
+from .models import Profile, Oferta, ClasificacionCandidato, Postulacion, Resena, OfertaFoto, ConfiguracionPlataforma, EmpleoGuardado, EmpleoDescartado, Notificacion, BloqueoPostulacion
+from datetime import timedelta
 from .forms import UserEditForm, ProfileEditForm, EmpresaProfileEditForm, OfertaForm
 
 def index(request):
@@ -694,6 +695,16 @@ def crear_resena(request, profile_id):
     else:
         messages.success(request, 'Tu reseña ha sido actualizada.')
 
+    # ── Notificar al destinatario de la reseña ──
+    autor_nombre = autor.nombre_visualizacion or autor.user.username
+    estrellas = '⭐' * calificacion
+    Notificacion.objects.create(
+        destinatario=destinatario.user,
+        tipo='nueva_resena',
+        mensaje=f'{autor_nombre} te dejó una reseña de {calificacion} {estrellas}.',
+        link=f'/perfil/?id={destinatario.id}'
+    )
+
     return redirect(f'/perfil/?id={profile_id}')
 
 
@@ -910,20 +921,41 @@ def aplicar_oferta(request, oferta_id):
     if request.user.profile.role != 'postulante':
         messages.error(request, 'Solo los postulantes pueden aplicar a ofertas.')
         return redirect('index')
-        
+
     oferta = get_object_or_404(Oferta, id=oferta_id)
-    
+    perfil_postulante = request.user.profile
+
+    # ── Verificar bloqueo de 15 días ──
+    bloqueo = BloqueoPostulacion.objects.filter(postulante=perfil_postulante, oferta=oferta).first()
+    if bloqueo:
+        dias_transcurridos = (timezone.now() - bloqueo.fecha_bloqueo).days
+        dias_restantes = 15 - dias_transcurridos
+        if dias_restantes > 0:
+            messages.error(request, f'No puedes postular a esta oferta aún. Podrás volver a intentarlo en {dias_restantes} día(s).')
+            return redirect('detalle_oferta', oferta_id=oferta.id)
+        else:
+            # Bloqueo expirado: limpiarlo para permitir nueva postulación
+            bloqueo.delete()
+
     if oferta.max_postulantes is not None and oferta.aplicaciones.count() >= oferta.max_postulantes:
         messages.error(request, 'No puedes aplicar. Esta oferta ha alcanzado el límite máximo de postulantes permitidos.')
         return redirect('detalle_oferta', oferta_id=oferta.id)
 
-    postulacion, created = Postulacion.objects.get_or_create(postulante=request.user.profile, oferta=oferta)
-    
+    postulacion, created = Postulacion.objects.get_or_create(postulante=perfil_postulante, oferta=oferta)
+
     if created:
         messages.success(request, f'¡Has postulado exitosamente a {oferta.titulo}!')
+        # ── Notificar a la empresa ──
+        nombre_postulante = perfil_postulante.nombre_visualizacion or request.user.username
+        Notificacion.objects.create(
+            destinatario=oferta.empresa.user,
+            tipo='nueva_postulacion',
+            mensaje=f'📨 {nombre_postulante} aplicó a tu vacante "{oferta.titulo}".',
+            link='/'
+        )
     else:
         messages.info(request, 'Ya habías postulado a esta oferta anteriormente.')
-    
+
     # Redirect back to the detail page after applying
     next_url = request.GET.get('next', 'index')
     return redirect(next_url)
@@ -995,6 +1027,109 @@ def error_403(request, exception=None):
     """Página 403 personalizada con ventana flotante."""
     from django.shortcuts import render as _render
     return _render(request, '403.html', status=403)
+
+
+# ── Centro de Notificaciones ──
+
+@login_required
+@require_POST
+def ajax_enviar_resultados_kanban(request):
+    """Envía notificaciones a todos los candidatos clasificados (no pendientes).
+    Si el estado es 'no_cumple', elimina la postulación y registra un bloqueo de 15 días."""
+    if request.user.profile.role != 'empresa':
+        return JsonResponse({'ok': False, 'error': 'No autorizado'}, status=403)
+
+    empresa = request.user.profile
+    mensajes_estado = {
+        'entrevista_pendiente': '📅 La empresa "{empresa}" te ha seleccionado para una entrevista. ¡Prepárate!',
+        'cumple': '✅ ¡Buenas noticias! La empresa "{empresa}" ha indicado que cumples los requisitos para la vacante.',
+        'no_cumple': '❌ La empresa "{empresa}" ha revisado tu postulación e indica que no cumples los requisitos en esta ocasión. Podrás volver a postular en 15 días.',
+    }
+
+    # Obtener todos los candidatos clasificados de esta empresa
+    clasificaciones = ClasificacionCandidato.objects.filter(
+        empresa=empresa
+    ).exclude(estado='pendiente').select_related('postulante__user')
+
+    total_enviadas = 0
+    for clasif in clasificaciones:
+        postulante = clasif.postulante
+        estado = clasif.estado
+        plantilla = mensajes_estado.get(estado)
+        if not plantilla:
+            continue
+
+        mensaje = plantilla.format(empresa=empresa.empresa_nombre or empresa.user.username)
+
+        # Crear notificación (evitando duplicados recientes — últimas 24h)
+        hace_24h = timezone.now() - timedelta(hours=24)
+        ya_notificado = Notificacion.objects.filter(
+            destinatario=postulante.user,
+            tipo='resultado_kanban',
+            mensaje=mensaje,
+            fecha__gte=hace_24h
+        ).exists()
+
+        if not ya_notificado:
+            Notificacion.objects.create(
+                destinatario=postulante.user,
+                tipo='resultado_kanban',
+                mensaje=mensaje,
+                link='/buscar_empleos/'
+            )
+            total_enviadas += 1
+
+        # Si no cumple: eliminar postulación y registrar bloqueo
+        if estado == 'no_cumple':
+            # Buscar la postulación del candidato a cualquier oferta de esta empresa
+            postulaciones = Postulacion.objects.filter(
+                postulante=postulante,
+                oferta__empresa=empresa
+            )
+            for post in postulaciones:
+                BloqueoPostulacion.objects.get_or_create(
+                    postulante=postulante,
+                    oferta=post.oferta,
+                    defaults={}
+                )
+                post.delete()
+            # Limpiar clasificación
+            clasif.delete()
+
+    return JsonResponse({'ok': True, 'enviadas': total_enviadas})
+
+
+@login_required
+def ajax_notificaciones(request):
+    """Devuelve las notificaciones del usuario."""
+    base_qs = Notificacion.objects.filter(destinatario=request.user)
+    no_leidas = base_qs.filter(leida=False).count()
+    notifs = base_qs.order_by('-fecha')[:30]
+    data = [
+        {
+            'id': n.id,
+            'tipo': n.tipo,
+            'mensaje': n.mensaje,
+            'leida': n.leida,
+            'link': n.link,
+            'fecha': n.fecha.strftime('%d/%m/%Y %H:%M'),
+        }
+        for n in notifs
+    ]
+    return JsonResponse({'ok': True, 'notificaciones': data, 'no_leidas': no_leidas})
+
+
+@login_required
+@require_POST
+def ajax_marcar_notificaciones(request):
+    """Marca una o todas las notificaciones como leídas."""
+    data = json.loads(request.body)
+    notif_id = data.get('id')  # si None → marca todas
+    if notif_id:
+        Notificacion.objects.filter(id=notif_id, destinatario=request.user).update(leida=True)
+    else:
+        Notificacion.objects.filter(destinatario=request.user, leida=False).update(leida=True)
+    return JsonResponse({'ok': True})
 
 
 # ── Eliminación de Cuenta ──

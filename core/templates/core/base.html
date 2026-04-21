@@ -47,6 +47,27 @@
             </div>
             <div class="nav-auth-links">
                     {% if user.is_authenticated %}
+                    <!-- 🔔 Campana de Notificaciones -->
+                    <div style="position:relative; display:inline-block;" id="notif-wrapper">
+                        <button id="notifBtn" onclick="toggleNotifPanel(event)"
+                            style="background:none; border:none; cursor:pointer; padding:0.4rem; color:var(--text-main); display:flex; align-items:center; justify-content:center; border-radius:0.5rem; position:relative; transition:background 0.2s;"
+                            onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:26px;height:26px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                            <span id="notif-badge" style="display:none; position:absolute; top:2px; right:2px; background:#ef4444; color:white; font-size:0.65rem; font-weight:800; min-width:17px; height:17px; border-radius:50%; display:flex; align-items:center; justify-content:center; line-height:1; border:2px solid var(--bg-card);">0</span>
+                        </button>
+                        <!-- Panel de notificaciones -->
+                        <div id="notif-panel" style="display:none; position:absolute; right:0; top:calc(100% + 12px); width:360px; max-width:95vw; background:var(--bg-card); border:1px solid var(--border-color); border-radius:1rem; box-shadow:0 20px 50px rgba(0,0,0,0.18); z-index:9998; overflow:hidden;">
+                            <div style="padding:1rem 1.25rem 0.75rem; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between;">
+                                <div style="font-weight:800; font-size:1rem; color:var(--text-main);">🔔 Notificaciones</div>
+                                <button onclick="marcarTodasLeidas()" style="background:none; border:none; cursor:pointer; font-size:0.8rem; color:var(--text-muted); font-weight:600; padding:0.25rem 0.5rem; border-radius:0.5rem; transition:background 0.2s;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='none'">Marcar todas como leídas</button>
+                            </div>
+                            <div id="notif-list" style="max-height:380px; overflow-y:auto; padding:0.5rem 0;">
+                                <div style="text-align:center; padding:2rem 1rem; color:var(--text-muted); font-size:0.9rem;">Cargando...</div>
+                            </div>
+                        </div>
+                    </div>
                     <a href="{% url 'perfil' %}"
                         style="display: flex; align-items: center; gap: 0.5rem; font-weight: 500; text-decoration: none; color: var(--text-main);">
                         {% if user.profile.foto_perfil %}
@@ -1008,6 +1029,100 @@ async function submitVerificacion(e) {
         });
     });
 </script>
+
+{% if user.is_authenticated %}
+<script>
+let notifPanelOpen = false;
+
+async function cargarNotificaciones() {
+    try {
+        const res = await fetch('/ajax/notificaciones/');
+        const data = await res.json();
+        if (!data.ok) return;
+        actualizarBadge(data.no_leidas);
+        renderNotificaciones(data.notificaciones);
+    } catch(e) { console.error('Error notificaciones', e); }
+}
+
+function actualizarBadge(count) {
+    const badge = document.getElementById('notif-badge');
+    if (!badge) return;
+    if (count > 0) { badge.textContent = count > 99 ? '99+' : count; badge.style.display = 'flex'; }
+    else { badge.style.display = 'none'; }
+}
+
+function renderNotificaciones(notifs) {
+    const list = document.getElementById('notif-list');
+    if (!list) return;
+    if (!notifs || notifs.length === 0) {
+        list.innerHTML = '<div style="text-align:center;padding:2.5rem 1rem;color:var(--text-muted);font-size:0.9rem;">\u2728 Sin notificaciones nuevas</div>';
+        return;
+    }
+    const iconos = {resultado_kanban:'\ud83d\udccb',nueva_postulacion:'\ud83d\udce8',nueva_resena:'\u2b50'};
+    list.innerHTML = notifs.map(n => {
+        const borde = n.leida ? 'transparent' : 'var(--primary-color)';
+        const peso  = n.leida ? '400' : '600';
+        const punto = !n.leida ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--primary-color);flex-shrink:0;margin-top:6px;"></div>' : '';
+        const icono = iconos[n.tipo] || '\ud83d\udd14';
+        return `<div onclick="irALink('${n.link}',${n.id})"
+            style="display:flex;gap:0.75rem;padding:0.875rem 1.25rem;cursor:pointer;transition:background 0.15s;border-left:3px solid ${borde};"
+            onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='transparent'">
+            <div style="font-size:1.4rem;flex-shrink:0;margin-top:2px;">${icono}</div>
+            <div style="flex:1;min-width:0;">
+                <div style="font-size:0.875rem;color:var(--text-main);line-height:1.4;font-weight:${peso};">${n.mensaje}</div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;">${n.fecha}</div>
+            </div>
+            ${punto}
+        </div>`;
+    }).join('');
+}
+
+async function irALink(link, id) {
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+    await fetch('/ajax/notificaciones/marcar-leida/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrf},
+        body: JSON.stringify({id: id})
+    });
+    if (link) window.location.href = link;
+    else { const p = document.getElementById('notif-panel'); if(p) p.style.display='none'; notifPanelOpen=false; }
+}
+
+async function marcarTodasLeidas() {
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+    await fetch('/ajax/notificaciones/marcar-leida/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrf},
+        body: JSON.stringify({})
+    });
+    await cargarNotificaciones();
+}
+
+function toggleNotifPanel(e) {
+    if(e) e.stopPropagation();
+    const panel = document.getElementById('notif-panel');
+    if (!panel) return;
+    notifPanelOpen = !notifPanelOpen;
+    panel.style.display = notifPanelOpen ? 'block' : 'none';
+    if (notifPanelOpen) cargarNotificaciones();
+}
+
+document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('notif-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+        const p = document.getElementById('notif-panel');
+        if (p) p.style.display = 'none';
+        notifPanelOpen = false;
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    cargarNotificaciones();
+    setInterval(cargarNotificaciones, 30000);
+});
+</script>
+{% endif %}
+
 </body>
 
 </html>

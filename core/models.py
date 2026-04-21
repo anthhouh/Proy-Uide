@@ -206,3 +206,45 @@ class ConfiguracionPlataforma(models.Model):
         if hasattr(self.__class__, 'objects') and self.__class__.objects.exists() and not self.pk:
             self.pk = self.__class__.objects.first().pk
         super().save(*args, **kwargs)
+
+
+# ── Notificaciones ──
+
+class Notificacion(models.Model):
+    TIPO_CHOICES = (
+        ('resultado_kanban', 'Resultado de clasificación'),
+        ('nueva_postulacion', 'Nueva postulación recibida'),
+        ('nueva_resena', 'Nueva reseña recibida'),
+    )
+    destinatario = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='notificaciones'
+    )
+    tipo = models.CharField(max_length=30, choices=TIPO_CHOICES)
+    mensaje = models.TextField()
+    leida = models.BooleanField(default=False)
+    fecha = models.DateTimeField(auto_now_add=True)
+    link = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        ordering = ['-fecha']
+        verbose_name = 'Notificación'
+        verbose_name_plural = 'Notificaciones'
+
+    def __str__(self):
+        return f"[{self.tipo}] para {self.destinatario.username} — {self.mensaje[:50]}"
+
+
+class BloqueoPostulacion(models.Model):
+    """Registra que un postulante fue descartado y no puede re-postular por 15 días."""
+    postulante = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='bloqueos_postulacion')
+    oferta = models.ForeignKey(Oferta, on_delete=models.CASCADE, related_name='bloqueos')
+    fecha_bloqueo = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('postulante', 'oferta')
+        verbose_name = 'Bloqueo de Postulación'
+        verbose_name_plural = 'Bloqueos de Postulación'
+
+    def __str__(self):
+        return f"{self.postulante.user.username} bloqueado en '{self.oferta.titulo}' desde {self.fecha_bloqueo.date()}"
+
