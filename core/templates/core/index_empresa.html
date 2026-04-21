@@ -212,18 +212,6 @@
             </div>
         </div>
 
-        <!-- COLUMN: Entrevistado -->
-        <div class="kanban-column" data-status="entrevistado">
-            <div class="kanban-col-header" style="border-top: 4px solid #a855f7; border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
-                <div class="kanban-col-title">🤝 Entrevistado</div>
-                <span class="kanban-count">{{ columnas.entrevistado|length }}</span>
-            </div>
-            <div class="kanban-cards-container">
-                {% for candidato in columnas.entrevistado %}
-                    {% include "core/partials/kanban_card.html" with p=candidato %}
-                {% endfor %}
-            </div>
-        </div>
 
         <!-- COLUMN: Cumple -->
         <div class="kanban-column" data-status="cumple">
